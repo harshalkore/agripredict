@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AgriPredict.ai — Forecasting the Future of Farming</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" />
+<style>
+/* ── Language Switcher ── */
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(34,212,146,0.07);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 3px;
+}
+.lang-btn {
+  padding: 5px 13px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all var(--t) var(--ease);
+  border: none;
+  background: transparent;
+  font-family: var(--font);
+  white-space: nowrap;
+}
+.lang-btn.active {
+  background: var(--green);
+  color: #000;
+}
+.lang-btn:hover:not(.active) {
+  color: var(--text-hi);
+  background: rgba(34,212,146,0.10);
+}
+
+/* ── Devanagari font support ── */
+[lang="mr"], [lang="hi"] {
+  font-family: 'Noto Sans Devanagari', 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ── Hero ── */
+.hero { min-height: calc(100vh - 62px); display: flex; align-items: center; padding: 80px 0 60px; position: relative; }
+.hero-content { max-width: 720px; }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; background: var(--green-glow); border: 1px solid var(--border-hi); border-radius: 100px; padding: 7px 18px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 32px; }
+.hero-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 2s ease infinite; }
+.hero-title { font-size: clamp(44px, 7vw, 88px); font-weight: 800; line-height: 1.04; letter-spacing: -3px; margin-bottom: 28px; }
+.hero-title .line2 { color: var(--green); display: block; }
+.hero-desc { font-size: 17px; color: var(--text-mid); line-height: 1.75; max-width: 560px; margin-bottom: 44px; }
+.hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+.hero-stats { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 16px; width: 240px; }
+.stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); padding: 18px 20px; backdrop-filter: blur(16px); transition: all var(--t) var(--ease); }
+.stat-card:hover { border-color: var(--border-hi); transform: translateX(-6px); }
+.stat-val { font-family: var(--mono); font-size: 28px; font-weight: 700; color: var(--green); line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 12px; color: var(--text-mid); }
+.scroll-hint { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--text-lo); font-size: 11px; font-family: var(--mono); letter-spacing: 0.1em; animation: float 2.5s ease infinite; }
+.scroll-hint::before { content: ''; width: 1px; height: 40px; background: linear-gradient(to bottom, transparent, var(--green)); display: block; }
+.how-section { padding: 120px 0; }
+.how-header { margin-bottom: 72px; }
+.steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+.step-card { background: var(--bg-card); padding: 36px 28px; transition: background var(--t) var(--ease); }
+.step-card:hover { background: var(--bg-raised); }
+.step-num { font-family: var(--mono); font-size: 11px; color: var(--text-lo); letter-spacing: 0.1em; margin-bottom: 20px; }
+.step-icon { font-size: 32px; margin-bottom: 16px; display: block; }
+.step-title { font-size: 16px; font-weight: 700; color: var(--text-hi); margin-bottom: 10px; }
+.step-body { font-size: 13px; color: var(--text-mid); line-height: 1.7; }
+.tech-section { padding: 0 0 120px; }
+.tech-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 56px; }
+.tech-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 36px 32px; backdrop-filter: blur(16px); transition: all var(--t) var(--ease); position: relative; overflow: hidden; }
+.tech-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: transparent; transition: background var(--t) var(--ease); }
+.tech-card:hover { border-color: var(--border-hi); transform: translateY(-4px); }
+.tech-card:hover::before { background: var(--green); }
+.tech-card.featured { border-color: rgba(34,212,146,0.25); }
+.tech-card.featured::before { background: var(--green); }
+.tech-icon { font-size: 36px; margin-bottom: 18px; display: block; }
+.tech-title { font-size: 18px; font-weight: 700; color: var(--green); margin-bottom: 10px; }
+.tech-card.featured .tech-title { font-size: 22px; color: var(--text-hi); }
+.tech-body { font-size: 14px; color: var(--text-mid); line-height: 1.75; }
+.crops-section { padding: 0 0 120px; }
+.crops-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 56px; }
+.crop-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 32px; backdrop-filter: blur(16px); transition: all var(--t) var(--ease); }
+.crop-card:hover { border-color: var(--border-hi); transform: translateY(-3px); }
+.crop-emoji { font-size: 44px; margin-bottom: 14px; display: block; }
+.crop-name { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.crop-market { font-family: var(--mono); font-size: 11px; color: var(--green); letter-spacing: 0.08em; margin-bottom: 14px; }
+.crop-meta { font-size: 13px; color: var(--text-mid); line-height: 1.7; }
+.crop-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+.crop-tag { background: var(--green-glow); border: 1px solid var(--border-hi); color: var(--green); padding: 3px 10px; border-radius: 100px; font-size: 11px; font-family: var(--mono); }
+.cta-section { padding: 0 0 120px; }
+.cta-strip { background: var(--bg-card); border: 1px solid var(--border-hi); border-radius: var(--r-xl); padding: 60px 64px; display: flex; align-items: center; justify-content: space-between; gap: 40px; backdrop-filter: blur(16px); position: relative; overflow: hidden; }
+.cta-strip::before { content: ''; position: absolute; top: -80px; right: -80px; width: 280px; height: 280px; background: radial-gradient(circle, rgba(34,212,146,0.08) 0%, transparent 70%); pointer-events: none; }
+.cta-title { font-size: clamp(22px, 3vw, 34px); font-weight: 700; letter-spacing: -0.8px; }
+.cta-sub { color: var(--text-mid); font-size: 15px; margin-top: 8px; }
+@media (max-width: 1100px) { .hero-stats { display: none; } .steps-grid { grid-template-columns: repeat(2,1fr); } .tech-grid { grid-template-columns: 1fr; } .crops-grid { grid-template-columns: repeat(2,1fr); } .cta-strip { flex-direction: column; padding: 40px 32px; text-align: center; } }
+@media (max-width: 640px) { .steps-grid { grid-template-columns: 1fr; } .crops-grid { grid-template-columns: 1fr; } .hero-actions { flex-direction: column; } .lang-btn { padding: 4px 9px; font-size: 11px; } }
+</style>
+</head>
+<body>
+<div class="farm-bg"></div>
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">AgriPredict<span>.ai</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active" data-i18n="nav_tech">Technology</a></li>
+      <li><a href="predict.html" data-i18n="nav_predict">Prediction Tool</a></li>
+      <li><a href="foryou.html" data-i18n="nav_foryou">For You</a></li>
+    </ul>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="lang-switcher">
+        <button class="lang-btn active" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" onclick="setLang('mr')">मराठी</button>
+        <button class="lang-btn" onclick="setLang('hi')">हिंदी</button>
+      </div>
+      <div class="nav-badge"><div class="nav-badge-dot"></div>BiLSTM · ARIMA · Live</div>
+    </div>
+  </div>
+</nav>
+
+<section class="hero page">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-eyebrow anim-fade-up"><span class="hero-eyebrow-dot"></span><span data-i18n="hero_eyebrow">Maharashtra · 3 Crops · 6 Years Data</span></div>
+      <h1 class="hero-title anim-fade-up anim-delay-1"><span data-i18n="hero_title_line1">Forecasting the</span><span class="line2" data-i18n="hero_title_line2">Future of Farming.</span></h1>
+      <p class="hero-desc anim-fade-up anim-delay-2" data-i18n="hero_desc">Our Bidirectional LSTM + ARIMA ensemble model analyses 6 years of real Mandi price records, seasonal patterns, and climate conditions to forecast wholesale prices up to 90 days ahead — helping farmers decide when to sell.</p>
+      <div class="hero-actions anim-fade-up anim-delay-3">
+        <a href="predict.html" class="btn-primary"><span>🚀</span> <span data-i18n="hero_cta_primary">Launch Predictor</span></a>
+        <a href="#how" class="btn-ghost" data-i18n="hero_cta_ghost">How It Works ↓</a>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-card anim-fade-up anim-delay-2"><div class="stat-val">R²=0.997</div><div class="stat-label" data-i18n="stat1">Accuracy on real 2024-25 mandi data</div></div>
+      <div class="stat-card anim-fade-up anim-delay-3"><div class="stat-val">6 yrs</div><div class="stat-label" data-i18n="stat2">Historical price records (2019–2025)</div></div>
+      <div class="stat-card anim-fade-up anim-delay-4"><div class="stat-val">90d</div><div class="stat-label" data-i18n="stat3">Maximum forecast horizon</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint" data-i18n="scroll_hint">SCROLL</div>
+</section>
+
+<section class="how-section" id="how">
+  <div class="container">
+    <div class="how-header reveal">
+      <div class="mono-label" style="margin-bottom:10px" data-i18n="process_label">Process</div>
+      <h2 class="section-title" data-i18n="how_title">How It Works</h2>
+      <p class="section-sub" style="margin-top:12px" data-i18n="how_sub">From raw mandi records to actionable sell-day advice — four steps, one decision.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card reveal">
+        <div class="step-num">01 / DATA</div>
+        <span class="step-icon">📊</span>
+        <div class="step-title" data-i18n="step1_title">Historical Price Collection</div>
+        <div class="step-body" data-i18n="step1_body">Monthly modal prices from Lasalgaon, Pune, and Latur APMCs — verified against agmarknet.gov.in, NHRDF, and Business Standard records from 2019 to 2025.</div>
+      </div>
+      <div class="step-card reveal anim-delay-1">
+        <div class="step-num">02 / TRAIN</div>
+        <span class="step-icon">🧠</span>
+        <div class="step-title" data-i18n="step2_title">BiLSTM Training</div>
+        <div class="step-body" data-i18n="step2_body">Bidirectional LSTM with 128 units, BatchNorm, and Huber loss reads daily price sequences both forward and backward — capturing seasonal spikes like the 2023 tomato crisis.</div>
+      </div>
+      <div class="step-card reveal anim-delay-2">
+        <div class="step-num">03 / ENSEMBLE</div>
+        <span class="step-icon">⚡</span>
+        <div class="step-title" data-i18n="step3_title">LSTM + ARIMA Ensemble</div>
+        <div class="step-body" data-i18n="step3_body">LSTM (70%) captures non-linear patterns. ARIMA (5,1,2) (30%) models linear trends and seasonality. Combined, they outperform either model alone.</div>
+      </div>
+      <div class="step-card reveal anim-delay-3">
+        <div class="step-num">04 / DECIDE</div>
+        <span class="step-icon">🌾</span>
+        <div class="step-title" data-i18n="step4_title">Farmer Recommendation</div>
+        <div class="step-body" data-i18n="step4_body">Market reality check, profit/loss calculation (CACP 2024-25 costs), MSP alert for Soybean, and plain-language action advice.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tech-section">
+  <div class="container">
+    <div class="reveal">
+      <div class="mono-label" style="margin-bottom:10px" data-i18n="tech_label">Technology Stack</div>
+      <h2 class="section-title" data-i18n="tech_title">Built for Real Accuracy</h2>
+    </div>
+    <div class="tech-grid">
+      <div class="tech-card reveal">
+        <span class="tech-icon">🔬</span>
+        <div class="tech-title" data-i18n="tech1_title">Deep Learning</div>
+        <div class="tech-body" data-i18n="tech1_body">Bidirectional LSTM (128 units) + BatchNormalization + Dropout (0.2). Trained with Huber loss for robustness against extreme price spikes. 60-day lookback window.</div>
+      </div>
+      <div class="tech-card reveal anim-delay-1">
+        <span class="tech-icon">📡</span>
+        <div class="tech-title" data-i18n="tech2_title">Verified Data Sources</div>
+        <div class="tech-body" data-i18n="tech2_body">Prices cross-verified from agmarknet.gov.in, NHRDF bulletins, Business Standard, CEIC/Directorate of Economics & Statistics, and KhetiVyapar.</div>
+      </div>
+      <div class="tech-card featured reveal anim-delay-2">
+        <span class="tech-icon">🎯</span>
+        <div class="tech-title" data-i18n="tech3_title">R² = 0.997 on Real Data</div>
+        <div class="tech-body" data-i18n="tech3_body">Evaluated on 24 actual monthly mandi records (2024-25). MAE = ₹35/q, RMSE = ₹44/q. Seasonal reality check prevents over-optimistic predictions.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="crops-section">
+  <div class="container">
+    <div class="reveal">
+      <div class="mono-label" style="margin-bottom:10px" data-i18n="crops_label">Coverage</div>
+      <h2 class="section-title" data-i18n="crops_title">Three Major Maharashtra Crops</h2>
+    </div>
+    <div class="crops-grid">
+      <div class="crop-card reveal">
+        <span class="crop-emoji">🧅</span>
+        <div class="crop-name" data-i18n="crop1_name">Onion</div>
+        <div class="crop-market">Lasalgaon APMC, Nashik</div>
+        <div class="crop-meta" data-i18n="crop1_meta">Asia's largest onion market. Kharif + Rabi seasons. Oct-Jan harvest arrival. High volatility — ₹600/q to ₹7,500/q in a single year.</div>
+        <div class="crop-tags">
+          <span class="crop-tag" data-i18n="crop1_tag1">Kharif + Rabi</span>
+          <span class="crop-tag" data-i18n="crop1_tag2">Oct-Jan harvest</span>
+        </div>
+      </div>
+      <div class="crop-card reveal anim-delay-1">
+        <span class="crop-emoji">🍅</span>
+        <div class="crop-name" data-i18n="crop2_name">Tomato</div>
+        <div class="crop-market">Pune APMC</div>
+        <div class="crop-meta" data-i18n="crop2_meta">Year-round crop with extreme seasonal spikes. July 2023 saw ₹9,000/q nationally. Model trained on COVID disruptions and harvest oversupply cycles.</div>
+        <div class="crop-tags">
+          <span class="crop-tag" data-i18n="crop2_tag1">Year-round</span>
+          <span class="crop-tag" data-i18n="crop2_tag2">Nov-Jan peak</span>
+        </div>
+      </div>
+      <div class="crop-card reveal anim-delay-2">
+        <span class="crop-emoji">🫘</span>
+        <div class="crop-name" data-i18n="crop3_name">Soybean</div>
+        <div class="crop-market">Latur APMC</div>
+        <div class="crop-meta" data-i18n="crop3_meta">Largest soybean trading hub in Maharashtra. MSP-anchored at ₹4,892/q (2024-25). Post-COVID peak reached ₹7,600/q in July 2021.</div>
+        <div class="crop-tags">
+          <span class="crop-tag" data-i18n="crop3_tag1">Kharif</span>
+          <span class="crop-tag" data-i18n="crop3_tag2">Oct-Nov harvest</span>
+          <span class="crop-tag" data-i18n="crop3_tag3">MSP protected</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-strip reveal">
+      <div>
+        <div class="cta-title" data-i18n="cta_title">Ready to predict your crop price?</div>
+        <div class="cta-sub" data-i18n="cta_sub">Select your crop, market, and climate — get a 90-day forecast in seconds.</div>
+      </div>
+      <a href="predict.html" class="btn-primary" style="white-space:nowrap;flex-shrink:0">
+        <span>🌾</span> <span data-i18n="cta_btn">Open Prediction Tool</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer style="border-top:1px solid var(--border);padding:28px 0;text-align:center;color:var(--text-lo);font-size:13px;font-family:var(--mono)">
+  © 2026 AgriPredict Engineering · BiLSTM + ARIMA Ensemble · Maharashtra: Onion · Tomato · Soybean
+</footer>
+
+<script src="script.js"></script>
+<script>
+// ════════════════════════════════════════════════════════════
+//  i18n Translations
+// ════════════════════════════════════════════════════════════
+const TRANSLATIONS = {
+  en: {
+    nav_tech: 'Technology',
+    nav_predict: 'Prediction Tool',
+    nav_foryou: 'For You',
+    hero_eyebrow: 'Maharashtra · 3 Crops · 6 Years Data',
+    hero_title_line1: 'Forecasting the',
+    hero_title_line2: 'Future of Farming.',
+    hero_desc: 'Our Bidirectional LSTM + ARIMA ensemble model analyses 6 years of real Mandi price records, seasonal patterns, and climate conditions to forecast wholesale prices up to 90 days ahead — helping farmers decide when to sell.',
+    hero_cta_primary: 'Launch Predictor',
+    hero_cta_ghost: 'How It Works ↓',
+    stat1: 'Accuracy on real 2024-25 mandi data',
+    stat2: 'Historical price records (2019–2025)',
+    stat3: 'Maximum forecast horizon',
+    scroll_hint: 'SCROLL',
+    process_label: 'Process',
+    how_title: 'How It Works',
+    how_sub: 'From raw mandi records to actionable sell-day advice — four steps, one decision.',
+    step1_title: 'Historical Price Collection',
+    step1_body: 'Monthly modal prices from Lasalgaon, Pune, and Latur APMCs — verified against agmarknet.gov.in, NHRDF, and Business Standard records from 2019 to 2025.',
+    step2_title: 'BiLSTM Training',
+    step2_body: 'Bidirectional LSTM with 128 units, BatchNorm, and Huber loss reads daily price sequences both forward and backward — capturing seasonal spikes like the 2023 tomato crisis.',
+    step3_title: 'LSTM + ARIMA Ensemble',
+    step3_body: 'LSTM (70%) captures non-linear patterns. ARIMA (5,1,2) (30%) models linear trends and seasonality. Combined, they outperform either model alone.',
+    step4_title: 'Farmer Recommendation',
+    step4_body: 'Market reality check, profit/loss calculation (CACP 2024-25 costs), MSP alert for Soybean, and plain-language action advice.',
+    tech_label: 'Technology Stack',
+    tech_title: 'Built for Real Accuracy',
+    tech1_title: 'Deep Learning',
+    tech1_body: 'Bidirectional LSTM (128 units) + BatchNormalization + Dropout (0.2). Trained with Huber loss for robustness against extreme price spikes. 60-day lookback window.',
+    tech2_title: 'Verified Data Sources',
+    tech2_body: 'Prices cross-verified from agmarknet.gov.in, NHRDF bulletins, Business Standard, CEIC/Directorate of Economics & Statistics, and KhetiVyapar.',
+    tech3_title: 'R² = 0.997 on Real Data',
+    tech3_body: 'Evaluated on 24 actual monthly mandi records (2024-25). MAE = ₹35/q, RMSE = ₹44/q. Seasonal reality check prevents over-optimistic predictions.',
+    crops_label: 'Coverage',
+    crops_title: 'Three Major Maharashtra Crops',
+    crop1_name: 'Onion',
+    crop1_meta: "Asia's largest onion market. Kharif + Rabi seasons. Oct-Jan harvest arrival. High volatility — ₹600/q to ₹7,500/q in a single year.",
+    crop1_tag1: 'Kharif + Rabi',
+    crop1_tag2: 'Oct-Jan harvest',
+    crop2_name: 'Tomato',
+    crop2_meta: 'Year-round crop with extreme seasonal spikes. July 2023 saw ₹9,000/q nationally. Model trained on COVID disruptions and harvest oversupply cycles.',
+    crop2_tag1: 'Year-round',
+    crop2_tag2: 'Nov-Jan peak',
+    crop3_name: 'Soybean',
+    crop3_meta: 'Largest soybean trading hub in Maharashtra. MSP-anchored at ₹4,892/q (2024-25). Post-COVID peak reached ₹7,600/q in July 2021.',
+    crop3_tag1: 'Kharif',
+    crop3_tag2: 'Oct-Nov harvest',
+    crop3_tag3: 'MSP protected',
+    cta_title: 'Ready to predict your crop price?',
+    cta_sub: 'Select your crop, market, and climate — get a 90-day forecast in seconds.',
+    cta_btn: 'Open Prediction Tool',
+  },
+
+  mr: {
+    nav_tech: 'तंत्रज्ञान',
+    nav_predict: 'किंमत अंदाज',
+    nav_foryou: 'तुमच्यासाठी',
+    hero_eyebrow: 'महाराष्ट्र · ३ पिके · ६ वर्षांचा डेटा',
+    hero_title_line1: 'शेतीच्या भविष्याचा',
+    hero_title_line2: 'अचूक अंदाज.',
+    hero_desc: 'आमचे BiLSTM + ARIMA एन्सेम्बल मॉडेल ६ वर्षांच्या मंडई किंमतींचा, हंगामी बदलांचा व हवामानाचा अभ्यास करून ९० दिवसांपर्यंतच्या घाऊक किंमती सांगते — शेतकऱ्यांना योग्य वेळी विक्री करण्यास मदत करते.',
+    hero_cta_primary: 'अंदाज सुरू करा',
+    hero_cta_ghost: 'हे कसे काम करते ↓',
+    stat1: '२०२४-२५ च्या मंडई डेटावर अचूकता',
+    stat2: 'ऐतिहासिक किंमती नोंदी (२०१९–२०२५)',
+    stat3: 'जास्तीत जास्त अंदाज कालावधी',
+    scroll_hint: 'खाली पहा',
+    process_label: 'प्रक्रिया',
+    how_title: 'हे कसे काम करते',
+    how_sub: 'कच्च्या मंडई नोंदींपासून ते विक्रीचा सल्ला देण्यापर्यंत — चार पायऱ्या, एक निर्णय.',
+    step1_title: 'ऐतिहासिक किंमत संकलन',
+    step1_body: 'लासलगाव, पुणे व लातूर APMC मधील मासिक मोडल किंमती — agmarknet.gov.in, NHRDF व Business Standard नोंदींशी पडताळलेल्या (२०१९–२०२५).',
+    step2_title: 'BiLSTM प्रशिक्षण',
+    step2_body: '१२८ युनिट्सचे Bidirectional LSTM, BatchNorm व Huber loss वापरून दैनंदिन किंमत क्रम पुढे-मागे वाचते — २०२३ च्या टोमॅटो संकटासारखे हंगामी चढउतार पकडते.',
+    step3_title: 'LSTM + ARIMA एन्सेम्बल',
+    step3_body: 'LSTM (७०%) अरेखीय नमुने पकडतो. ARIMA (५,१,२) (३०%) रेखीय ट्रेंड व हंगाम मॉडेल करतो. एकत्र ते दोन्हींपेक्षा अधिक चांगले काम करतात.',
+    step4_title: 'शेतकऱ्यासाठी सल्ला',
+    step4_body: 'बाजार वास्तव तपासणी, नफा/तोटा गणना (CACP २०२४-२५ खर्च), सोयाबीनसाठी MSP इशारा, आणि सोप्या भाषेत कृती सल्ला.',
+    tech_label: 'तंत्रज्ञान स्टॅक',
+    tech_title: 'खऱ्या अचूकतेसाठी बनवलेले',
+    tech1_title: 'डीप लर्निंग',
+    tech1_body: 'Bidirectional LSTM (१२८ युनिट्स) + BatchNormalization + Dropout (०.२). अत्यंत किंमत वाढीला तोंड देण्यासाठी Huber loss ने प्रशिक्षित. ६०-दिवस lookback विंडो.',
+    tech2_title: 'पडताळलेले डेटा स्रोत',
+    tech2_body: 'agmarknet.gov.in, NHRDF बुलेटिन, Business Standard, CEIC/अर्थशास्त्र संचालनालय व KhetiVyapar मधून किंमती क्रॉस-व्हेरिफाय केल्या.',
+    tech3_title: 'वास्तव डेटावर R² = ०.९९७',
+    tech3_body: '२४ वास्तविक मासिक मंडई नोंदींवर (२०२४-२५) मूल्यांकन. MAE = ₹३५/क्विंटल, RMSE = ₹४४/क्विंटल. हंगामी वास्तव तपासणी अतिआशावादी अंदाज टाळते.',
+    crops_label: 'कव्हरेज',
+    crops_title: 'महाराष्ट्रातील तीन प्रमुख पिके',
+    crop1_name: 'कांदा',
+    crop1_meta: 'आशियातील सर्वात मोठी कांदा बाजारपेठ. खरीप + रब्बी हंगाम. ऑक्टो-जानेवारी आगमन. तीव्र चढउतार — एका वर्षात ₹६००/क्विं ते ₹७,५००/क्विं.',
+    crop1_tag1: 'खरीप + रब्बी',
+    crop1_tag2: 'ऑक्टो-जाने काढणी',
+    crop2_name: 'टोमॅटो',
+    crop2_meta: 'वर्षभर पीक, अत्यंत हंगामी चढउतार. जुलै २०२३ मध्ये राष्ट्रीय स्तरावर ₹९,०००/क्विं. COVID व जास्त पुरवठा चक्रांवर मॉडेल प्रशिक्षित.',
+    crop2_tag1: 'वर्षभर',
+    crop2_tag2: 'नोव्हें-जाने शिखर',
+    crop3_name: 'सोयाबीन',
+    crop3_meta: 'महाराष्ट्रातील सर्वात मोठा सोयाबीन व्यापार केंद्र. MSP ₹४,८९२/क्विं (२०२४-२५). COVID नंतर जुलै २०२१ मध्ये ₹७,६०० शिखर.',
+    crop3_tag1: 'खरीप',
+    crop3_tag2: 'ऑक्टो-नोव्हें काढणी',
+    crop3_tag3: 'MSP संरक्षित',
+    cta_title: 'तुमच्या पिकाची किंमत जाणून घ्यायची आहे?',
+    cta_sub: 'तुमचे पीक, बाजार व हवामान निवडा — ९० दिवसांचा अंदाज काही सेकंदात.',
+    cta_btn: 'किंमत अंदाज साधन उघडा',
+  },
+
+  hi: {
+    nav_tech: 'तकनीक',
+    nav_predict: 'मूल्य पूर्वानुमान',
+    nav_foryou: 'आपके लिए',
+    hero_eyebrow: 'महाराष्ट्र · ३ फसलें · ६ साल का डेटा',
+    hero_title_line1: 'खेती के भविष्य का',
+    hero_title_line2: 'सटीक अनुमान।',
+    hero_desc: 'हमारा BiLSTM + ARIMA एन्सेम्बल मॉडेल ६ साल के मंडी भाव, मौसमी बदलाव और जलवायु की जानकारी का विश्लेषण करके ९० दिनों तक के थोक मूल्यों का पूर्वानुमान लगाता है — किसानों को सही समय पर बेचने में मदद करता है।',
+    hero_cta_primary: 'अनुमान शुरू करें',
+    hero_cta_ghost: 'यह कैसे काम करता है ↓',
+    stat1: '२०२४-२५ के मंडी डेटा पर सटीकता',
+    stat2: 'ऐतिहासिक मूल्य रिकॉर्ड (२०१९–२०२५)',
+    stat3: 'अधिकतम पूर्वानुमान अवधि',
+    scroll_hint: 'नीचे देखें',
+    process_label: 'प्रक्रिया',
+    how_title: 'यह कैसे काम करता है',
+    how_sub: 'कच्चे मंडी रिकॉर्ड से लेकर बिक्री सलाह तक — चार चरण, एक निर्णय।',
+    step1_title: 'ऐतिहासिक मूल्य संग्रह',
+    step1_body: 'लासलगाव, पुणे व लातूर APMC के मासिक मोडल भाव — agmarknet.gov.in, NHRDF व Business Standard रिकॉर्ड से सत्यापित (२०१९–२०२५)।',
+    step2_title: 'BiLSTM प्रशिक्षण',
+    step2_body: '१२८ यूनिट्स का Bidirectional LSTM, BatchNorm और Huber loss के साथ दैनिक मूल्य अनुक्रम आगे-पीछे दोनों तरफ से पढ़ता है — २०२३ टमाटर संकट जैसे मौसमी उछाल पकड़ता है।',
+    step3_title: 'LSTM + ARIMA एन्सेम्बल',
+    step3_body: 'LSTM (७०%) गैर-रेखीय पैटर्न पकड़ता है। ARIMA (५,१,२) (३०%) रेखीय ट्रेंड और मौसमी बदलाव को मॉडल करता है। साथ में दोनों से बेहतर प्रदर्शन करते हैं।',
+    step4_title: 'किसान सिफारिश',
+    step4_body: 'बाजार वास्तविकता जाँच, लाभ/हानि गणना (CACP २०२४-२५ लागत), सोयाबीन के लिए MSP अलर्ट, और सरल भाषा में कार्य सलाह।',
+    tech_label: 'तकनीकी स्टैक',
+    tech_title: 'वास्तविक सटीकता के लिए निर्मित',
+    tech1_title: 'डीप लर्निंग',
+    tech1_body: 'Bidirectional LSTM (१२८ यूनिट्स) + BatchNormalization + Dropout (०.२)। अत्यधिक मूल्य उछाल के विरुद्ध मजबूती के लिए Huber loss से प्रशिक्षित। ६०-दिन lookback विंडो।',
+    tech2_title: 'सत्यापित डेटा स्रोत',
+    tech2_body: 'agmarknet.gov.in, NHRDF बुलेटिन, Business Standard, CEIC/अर्थशास्त्र एवं सांख्यिकी निदेशालय और KhetiVyapar से मूल्य क्रॉस-सत्यापित।',
+    tech3_title: 'वास्तविक डेटा पर R² = ०.९९७',
+    tech3_body: '२४ वास्तविक मासिक मंडी रिकॉर्ड (२०२४-२५) पर मूल्यांकित। MAE = ₹३५/क्विं, RMSE = ₹४४/क्विं। मौसमी वास्तविकता जाँच अत्यधिक आशावादी पूर्वानुमान रोकती है।',
+    crops_label: 'कवरेज',
+    crops_title: 'महाराष्ट्र की तीन प्रमुख फसलें',
+    crop1_name: 'प्याज',
+    crop1_meta: 'एशिया की सबसे बड़ी प्याज मंडी। खरीफ + रबी मौसम। अक्टू-जनवरी आगमन। तीव्र उतार-चढ़ाव — एक वर्ष में ₹६००/क्विं से ₹७,५००/क्विं तक।',
+    crop1_tag1: 'खरीफ + रबी',
+    crop1_tag2: 'अक्टू-जनवरी फसल',
+    crop2_name: 'टमाटर',
+    crop2_meta: 'साल भर की फसल, अत्यधिक मौसमी उछाल। जुलाई २०२३ में राष्ट्रीय स्तर पर ₹९,०००/क्विं। COVID व्यवधान और अधिक आपूर्ति चक्र पर मॉडल प्रशिक्षित।',
+    crop2_tag1: 'साल भर',
+    crop2_tag2: 'नवंबर-जनवरी शिखर',
+    crop3_name: 'सोयाबीन',
+    crop3_meta: 'महाराष्ट्र का सबसे बड़ा सोयाबीन व्यापार केंद्र। MSP ₹४,८९२/क्विं (२०२४-२५)। COVID के बाद जुलाई २०२१ में ₹७,६०० का शिखर।',
+    crop3_tag1: 'खरीफ',
+    crop3_tag2: 'अक्टू-नवंबर फसल',
+    crop3_tag3: 'MSP संरक्षित',
+    cta_title: 'अपनी फसल का मूल्य जानना चाहते हैं?',
+    cta_sub: 'अपनी फसल, बाजार और जलवायु चुनें — ९० दिनों का पूर्वानुमान कुछ सेकंड में।',
+    cta_btn: 'मूल्य अनुमान उपकरण खोलें',
+  },
+};
+
+// ════════════════════════════════════════════════════════════
+//  Language Switch Logic
+// ════════════════════════════════════════════════════════════
+let currentLang = localStorage.getItem('agri_lang') || 'en';
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('agri_lang', lang);
+
+  // Update html lang attribute for font rendering
+  document.documentElement.lang = lang;
+
+  // Apply Devanagari font to body for mr/hi
+  if (lang === 'mr' || lang === 'hi') {
+    document.body.style.fontFamily = "'Noto Sans Devanagari', 'Plus Jakarta Sans', sans-serif";
+  } else {
+    document.body.style.fontFamily = '';
+  }
+
+  // Update all translated elements
+  const t = TRANSLATIONS[lang] || TRANSLATIONS['en'];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+
+  // Update active button
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active',
+      (btn.textContent.trim() === 'EN' && lang === 'en') ||
+      (btn.textContent.trim() === 'मराठी' && lang === 'mr') ||
+      (btn.textContent.trim() === 'हिंदी' && lang === 'hi')
+    );
+  });
+
+  // Update page title
+  const titles = {
+    en: 'AgriPredict.ai — Forecasting the Future of Farming',
+    mr: 'AgriPredict.ai — शेतीच्या भविष्याचा अचूक अंदाज',
+    hi: 'AgriPredict.ai — खेती के भविष्य का सटीक अनुमान',
+  };
+  document.title = titles[lang] || titles['en'];
+}
+
+// Init on load
+document.addEventListener('DOMContentLoaded', () => {
+  setLang(currentLang);
+});
+</script>
+</body>
+</html>

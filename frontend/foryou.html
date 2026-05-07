@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>For You — AgriPredict.ai</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" />
+<style>
+.fy-page { padding: 80px 0 80px; }
+.fy-header { padding: 48px 0 52px; }
+.ticker-strip { background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 14px 0; overflow: hidden; margin-bottom: 48px; }
+.ticker-inner { display: flex; gap: 48px; animation: ticker 20s linear infinite; white-space: nowrap; }
+.ticker-item  { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 13px; flex-shrink: 0; }
+.ticker-name  { color: var(--text-mid); }
+.ticker-price { color: var(--text-hi); font-weight: 700; }
+.ticker-change.up   { color: var(--green); }
+.ticker-change.down { color: var(--red); }
+@keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.fy-grid { display: grid; grid-template-columns: 1fr 360px; gap: 22px; align-items: start; }
+.sub-title { font-size: 19px; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+.alerts-stack { display: flex; flex-direction: column; gap: 14px; margin-bottom: 36px; }
+.alert-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); padding: 20px 22px; display: flex; gap: 16px; align-items: flex-start; backdrop-filter: blur(12px); transition: all var(--t) var(--ease); }
+.alert-card:hover { border-color: var(--border-hi); transform: translateX(4px); }
+.alert-icon { font-size: 28px; flex-shrink: 0; }
+.alert-type-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+.at-price   { background: rgba(34,212,146,0.14); color: var(--green); }
+.at-weather { background: rgba(77,159,255,0.12); color: var(--blue); }
+.at-msp     { background: rgba(240,180,41,0.12); color: var(--amber); }
+.at-warn    { background: rgba(240,82,101,0.12); color: var(--red); }
+.alert-headline { font-size: 15px; font-weight: 600; margin-bottom: 5px; }
+.alert-body { font-size: 13px; color: var(--text-mid); line-height: 1.65; }
+.season-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 36px; }
+.season-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); padding: 20px; backdrop-filter: blur(12px); transition: all var(--t) var(--ease); }
+.season-card:hover { border-color: var(--border-hi); }
+.season-crop { font-size: 28px; margin-bottom: 8px; }
+.season-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.season-timing { font-family: var(--mono); font-size: 11px; color: var(--green); margin-bottom: 10px; }
+.season-tip  { font-size: 12.5px; color: var(--text-mid); line-height: 1.65; }
+.tips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.tip-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); padding: 22px; backdrop-filter: blur(12px); transition: all var(--t) var(--ease); }
+.tip-card:hover { border-color: var(--border-hi); }
+.tip-num { font-family: var(--mono); font-size: 11px; color: var(--text-lo); margin-bottom: 10px; }
+.tip-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.tip-body  { font-size: 13px; color: var(--text-mid); line-height: 1.7; }
+.sidebar   { display: flex; flex-direction: column; gap: 18px; }
+.watchlist-card { background: var(--bg-card); border: 1px solid var(--border-hi); border-radius: var(--r-lg); padding: 26px; backdrop-filter: blur(16px); position: sticky; top: 82px; }
+.wl-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.wl-subtitle { font-size: 12px; color: var(--text-lo); margin-bottom: 18px; font-family: var(--mono); }
+.wl-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.wl-item:last-child { border-bottom: none; }
+.wl-crop  { display: flex; align-items: center; gap: 10px; }
+.wl-emoji { font-size: 22px; }
+.wl-name  { font-size: 14px; font-weight: 600; }
+.wl-market { font-size: 11px; color: var(--text-lo); font-family: var(--mono); }
+.wl-right  { text-align: right; }
+.wl-price  { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--text-hi); }
+.wl-change { font-family: var(--mono); font-size: 12px; font-weight: 700; }
+.wl-change.up   { color: var(--green); }
+.wl-change.down { color: var(--red); }
+.quick-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 22px; backdrop-filter: blur(12px); }
+.quick-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+.quick-link { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-mid); transition: color var(--t); }
+.quick-link:last-child { border-bottom: none; }
+.quick-link:hover { color: var(--green); }
+.quick-link span:first-child { font-size: 16px; }
+.season-context { background: var(--green-glow); border: 1px solid var(--border-hi); border-radius: var(--r-md); padding: 16px 18px; font-size: 13px; color: var(--green); line-height: 1.65; font-family: var(--mono); }
+
+/* Lang switcher */
+.lang-switcher { display: flex; align-items: center; gap: 4px; background: rgba(34,212,146,0.07); border: 1px solid var(--border); border-radius: 100px; padding: 3px; }
+.lang-btn { padding: 5px 13px; border-radius: 100px; font-size: 12px; font-weight: 600; color: var(--text-mid); cursor: pointer; transition: all var(--t) var(--ease); border: none; background: transparent; font-family: 'Noto Sans Devanagari', 'Plus Jakarta Sans', sans-serif; white-space: nowrap; }
+.lang-btn.active { background: var(--green); color: #000; }
+.lang-btn:hover:not(.active) { color: var(--text-hi); background: rgba(34,212,146,0.10); }
+
+@media (max-width: 1100px) { .fy-grid { grid-template-columns: 1fr; } .watchlist-card { position: static; } .season-grid { grid-template-columns: 1fr; } .tips-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .lang-btn { padding: 4px 9px; font-size: 11px; } }
+</style>
+</head>
+<body>
+<div class="farm-bg"></div>
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">AgriPredict<span>.ai</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html" data-i18n="nav_tech">Technology</a></li>
+      <li><a href="predict.html" data-i18n="nav_predict">Prediction Tool</a></li>
+      <li><a href="foryou.html" class="active" data-i18n="nav_foryou">For You</a></li>
+    </ul>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="lang-switcher">
+        <button class="lang-btn active" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" onclick="setLang('mr')">मराठी</button>
+        <button class="lang-btn" onclick="setLang('hi')">हिंदी</button>
+      </div>
+      <div class="nav-badge"><div class="nav-badge-dot"></div>BiLSTM · ARIMA · Live</div>
+    </div>
+  </div>
+</nav>
+
+<div class="page fy-page">
+  <div class="ticker-strip">
+    <div class="ticker-inner" id="tickerInner"></div>
+  </div>
+  <div class="container">
+    <div class="fy-header anim-fade-up">
+      <div class="mono-label" style="margin-bottom:10px" data-i18n="fy_label">Live Intelligence</div>
+      <h1 class="section-title" data-i18n="fy_title">Your Market Intelligence</h1>
+      <p class="section-sub" style="margin-top:10px" data-i18n="fy_sub">Price alerts, weather impact warnings, seasonal context, and farmer tips — all derived from the same AI engine that powers the prediction tool.</p>
+    </div>
+
+    <div class="fy-grid">
+      <div>
+        <div class="sub-title anim-fade-up"><span>🔔</span> <span data-i18n="alerts_title">Price &amp; Weather Alerts</span></div>
+        <div class="alerts-stack" id="alertsStack"></div>
+
+        <div class="sub-title reveal"><span>📅</span> <span data-i18n="season_title">Current Season Context</span></div>
+        <div class="season-grid" id="seasonGrid"></div>
+
+        <div class="sub-title reveal"><span>💡</span> <span data-i18n="tips_title">Farmer Decision Tips</span></div>
+        <div class="tips-grid" id="tipsGrid"></div>
+      </div>
+
+      <div class="sidebar">
+        <div class="watchlist-card">
+          <div class="wl-title" data-i18n="wl_title">📊 Crop Watchlist</div>
+          <div class="wl-subtitle" id="wlDate"></div>
+          <div id="watchlistEl"><div style="color:var(--text-lo);font-size:12px;font-family:var(--mono);padding:10px 0" data-i18n="loading">Loading…</div></div>
+        </div>
+        <div class="season-context" id="seasonContextEl"></div>
+        <div class="quick-card">
+          <div class="quick-title" data-i18n="resources_title">🔗 Official Resources</div>
+          <a class="quick-link" href="https://agmarknet.gov.in" target="_blank" rel="noopener"><span>🌐</span> <span data-i18n="res1">agmarknet.gov.in — Live Mandi Data</span></a>
+          <a class="quick-link" href="https://nhrdf.com" target="_blank" rel="noopener"><span>🧅</span> <span data-i18n="res2">NHRDF — Onion Price Bulletins</span></a>
+          <a class="quick-link" href="https://nafed-india.com" target="_blank" rel="noopener"><span>📋</span> <span data-i18n="res3">NAFED — MSP Procurement Centres</span></a>
+          <a class="quick-link" href="predict.html"><span>🚀</span> <span data-i18n="res4">Open Prediction Tool →</span></a>
+        </div>
+        <div class="quick-card">
+          <div class="quick-title" data-i18n="accuracy_title">🎯 Model Accuracy (2024-25)</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+            <div>
+              <div style="font-size:11px;color:var(--text-lo);font-family:var(--mono);margin-bottom:4px" data-i18n="r2_label">R² on real mandi records</div>
+              <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green)">0.997</div>
+            </div>
+            <div class="divider"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div><div style="font-size:11px;color:var(--text-lo);font-family:var(--mono);margin-bottom:2px">MAE</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--text-hi)">₹35/q</div></div>
+              <div><div style="font-size:11px;color:var(--text-lo);font-family:var(--mono);margin-bottom:2px">RMSE</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--text-hi)">₹44/q</div></div>
+            </div>
+            <div style="font-size:11px;color:var(--text-lo);line-height:1.6" data-i18n="accuracy_note">Evaluated on 24 actual monthly mandi records (2024-25) — not inflated interpolated validation.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:28px 0;text-align:center;color:var(--text-lo);font-size:13px;font-family:var(--mono);margin-top:20px">
+  © 2026 AgriPredict Engineering · BiLSTM + ARIMA Ensemble · Data: agmarknet.gov.in / NHRDF / CEIC
+</footer>
+
+<script src="script.js"></script>
+<script>
+// ════════════════════════════════════════════════════════════
+//  PAGE-LEVEL TRANSLATIONS
+// ════════════════════════════════════════════════════════════
+const FY_TRANSLATIONS = {
+  en: {
+    nav_tech:'Technology', nav_predict:'Prediction Tool', nav_foryou:'For You',
+    fy_label:'Live Intelligence',
+    fy_title:'Your Market Intelligence',
+    fy_sub:'Price alerts, weather impact warnings, seasonal context, and farmer tips — all derived from the same AI engine that powers the prediction tool.',
+    alerts_title:'Price & Weather Alerts',
+    season_title:'Current Season Context',
+    tips_title:'Farmer Decision Tips',
+    wl_title:'📊 Crop Watchlist',
+    wl_date_prefix:"Today's est. prices",
+    loading:'Loading…',
+    resources_title:'🔗 Official Resources',
+    res1:'agmarknet.gov.in — Live Mandi Data',
+    res2:'NHRDF — Onion Price Bulletins',
+    res3:'NAFED — MSP Procurement Centres',
+    res4:'Open Prediction Tool →',
+    accuracy_title:'🎯 Model Accuracy (2024-25)',
+    r2_label:'R² on real mandi records',
+    accuracy_note:'Evaluated on 24 actual monthly mandi records (2024-25) — not inflated interpolated validation.',
+    // Alerts
+    alert_badge_price:'PRICE', alert_badge_weather:'WEATHER', alert_badge_msp:'MSP', alert_badge_warn:'WARNING',
+    a1_headline:'Onion prices stabilising in Lasalgaon',
+    a1_body:'Rabi harvest arrivals tapering in Apr 2026. Model forecasts gradual price recovery through May-June. Consider short-term storage if quality is good.',
+    a2_headline:'Unseasonal rain may affect Onion quality in Nashik',
+    a2_body:'AI suggests early harvest and dry storage for Onion growers in Nashik district. Wet storage = rot. Price impact estimated at ×1.05–1.08 if widespread.',
+    a3_headline:'Soybean MSP ₹4,892/q — NAFED procurement open',
+    a3_body:'Current Latur mandi prices are near MSP floor. Visit your nearest NAFED centre before selling below ₹4,892/q. You are entitled to government support price.',
+    a4_headline:'Tomato prices under pressure — rabi oversupply',
+    a4_body:'Large rabi tomato arrivals from Pune and Nashik belts are keeping prices suppressed. Expect recovery only post-May once monsoon disrupts supply chains.',
+    // Season data
+    s_onion_name:'Onion', s_onion_timing:'Apr-Jun: Rabi arrivals tapering',
+    s_onion_tip:'Rabi harvest arrivals slowing. Prices may stabilise and recover through May-June as old stock depletes before kharif harvest.',
+    s_tomato_name:'Tomato', s_tomato_timing:'Apr-May: Summer pressure on prices',
+    s_tomato_tip:'Summer season — supply from Pune and Nashik is limited. Prices may be moderate. Watch for pre-monsoon spike in June-July.',
+    s_soybean_name:'Soybean', s_soybean_timing:'Apr-May: Pre-kharif sowing window',
+    s_soybean_tip:'Old stock being cleared. Prices may softly trend toward MSP floor (₹4,892/q). NAFED procurement active if below MSP.',
+    // Seasonal context by month
+    ctx_1:'[Jan-Feb] Post-harvest. Heavy arrivals keeping Onion prices low. Best time to SELL Soybean (pre-kharif demand).',
+    ctx_3:'[Mar-May] Onion rabi harvest arriving. Prices at seasonal LOW. Tomato oversupply from rabi crop.',
+    ctx_6:'[Jun-Sep] Monsoon. Heavy rain can spike Onion/Tomato prices. Soybean kharif sowing in progress.',
+    ctx_10:'[Oct-Dec] Soybean harvest arriving → prices soften. Kharif onion arriving. Festival demand (Diwali) supports prices.',
+    // Tips
+    tip1_title:'Understand the Harvest Calendar',
+    tip1_body:'Onion prices typically hit seasonal lows in Jan-Mar (rabi harvest arrivals) and peak in Aug-Oct (pre-kharif supply gap). Holding stock beyond November usually sees falling prices as new kharif stock floods the mandi.',
+    tip2_title:"Don't Chase Peak Prices",
+    tip2_body:'The AI model predicts peak day, but prices rarely stay at peak for more than 2-3 days. Plan to sell within ±5% of the forecasted peak window rather than waiting for the exact maximum.',
+    tip3_title:'Soybean: Always Check MSP First',
+    tip3_body:'Govt MSP for Soybean is ₹4,892/q (2024-25). If your local mandi price is below MSP, visit the nearest NAFED/FCI procurement centre. You are legally entitled to MSP.',
+    tip4_title:'Climate Adjustment is Real',
+    tip4_body:'Heavy rain affects onion the most (rots in wet soil → supply falls → prices rise). Drought affects all three crops. Enter your actual climate condition in the Prediction Tool for the most accurate forecast.',
+    tip5_title:'Use Ensemble, Not Just LSTM',
+    tip5_body:'The ARIMA component captures linear price trends that pure LSTM can miss. The 70/30 ensemble consistently outperforms both models individually — always use the Ensemble column.',
+    tip6_title:'Download Your Report',
+    tip6_body:'Use the PDF download button in the Prediction Tool to save a full report with day-by-day forecast, profit/loss calculation, and sell recommendation — perfect for sharing with buyers or agents.',
+  },
+  mr: {
+    nav_tech:'तंत्रज्ञान', nav_predict:'किंमत अंदाज', nav_foryou:'तुमच्यासाठी',
+    fy_label:'थेट बाजार माहिती',
+    fy_title:'तुमची बाजार माहिती',
+    fy_sub:'किंमत इशारे, हवामान परिणाम, हंगामी संदर्भ आणि शेतकरी टिप्स — सर्व त्याच AI इंजिनमधून जे अंदाज साधन चालवते.',
+    alerts_title:'किंमत व हवामान इशारे',
+    season_title:'सध्याचा हंगाम संदर्भ',
+    tips_title:'शेतकरी निर्णय टिप्स',
+    wl_title:'📊 पीक वॉचलिस्ट',
+    wl_date_prefix:'आजच्या अंदाजित किंमती',
+    loading:'लोड होत आहे…',
+    resources_title:'🔗 अधिकृत संसाधने',
+    res1:'agmarknet.gov.in — थेट मंडई डेटा',
+    res2:'NHRDF — कांदा किंमत बुलेटिन',
+    res3:'NAFED — MSP खरेदी केंद्रे',
+    res4:'किंमत अंदाज साधन उघडा →',
+    accuracy_title:'🎯 मॉडेल अचूकता (२०२४-२५)',
+    r2_label:'वास्तविक मंडई नोंदींवर R²',
+    accuracy_note:'२४ वास्तविक मासिक मंडई नोंदींवर (२०२४-२५) मूल्यांकित — इंटरपोलेटेड व्हॅलिडेशन नाही.',
+    alert_badge_price:'किंमत', alert_badge_weather:'हवामान', alert_badge_msp:'MSP', alert_badge_warn:'सावधान',
+    a1_headline:'लासलगावमध्ये कांद्याच्या किंमती स्थिरावत आहेत',
+    a1_body:'एप्रिल २०२६ मध्ये रब्बी हार्वेस्ट आगमन कमी होत आहे. मॉडेल मे-जूनपर्यंत हळूहळू किंमत सुधारणेचा अंदाज करते. गुणवत्ता चांगली असल्यास अल्पकालीन साठवणूक विचारात घ्या.',
+    a2_headline:'नाशिकमध्ये अवेळी पावसाने कांद्याच्या गुणवत्तेवर परिणाम होऊ शकतो',
+    a2_body:'AI नाशिक जिल्ह्यातील कांदा उत्पादकांसाठी लवकर काढणी आणि कोरड्या साठवणुकीचा सल्ला देते. ओल्या साठवणुकीने कुजते. व्यापक झाल्यास किंमत परिणाम ×१.०५–१.०८ अपेक्षित.',
+    a3_headline:'सोयाबीन MSP ₹४,८९२/क्विं — NAFED खरेदी सुरू',
+    a3_body:'लातूर मंडईतील सध्याच्या किंमती MSP मर्यादेजवळ आहेत. ₹४,८९२/क्विं पेक्षा कमी किंमतीत विकण्यापूर्वी जवळच्या NAFED केंद्राला भेट द्या. तुम्हाला सरकारी आधारभूत किंमत मिळण्याचा अधिकार आहे.',
+    a4_headline:'टोमॅटोच्या किंमतींवर दबाव — रब्बी अतिपुरवठा',
+    a4_body:'पुणे व नाशिक पट्ट्यातून मोठ्या प्रमाणात रब्बी टोमॅटोचे आगमन किंमती दाबत आहे. पावसाळ्यानंतरच (मे नंतर) सुधारणेची अपेक्षा.',
+    s_onion_name:'कांदा', s_onion_timing:'एप्रिल-जून: रब्बी आगमन कमी होत आहे',
+    s_onion_tip:'रब्बी हार्वेस्ट आगमन मंदावत आहे. जुना साठा संपला की किंमती मे-जूनपर्यंत स्थिरावून सुधारू शकतात.',
+    s_tomato_name:'टोमॅटो', s_tomato_timing:'एप्रिल-मे: उन्हाळ्याचा किंमतींवर दबाव',
+    s_tomato_tip:'उन्हाळी हंगाम — पुणे व नाशिकचा पुरवठा मर्यादित. किंमती मध्यम राहू शकतात. जून-जुलैमधील पूर्व-मॉन्सून उछाल पाहा.',
+    s_soybean_name:'सोयाबीन', s_soybean_timing:'एप्रिल-मे: खरीप पेरणीपूर्व खिडकी',
+    s_soybean_tip:'जुना साठा साफ होत आहे. किंमती हळूहळू MSP मर्यादेकडे (₹४,८९२/क्विं) सरकू शकतात. MSP खाली असल्यास NAFED खरेदी सक्रिय.',
+    ctx_1:'[जाने-फेब्रु] काढणीनंतर. जड आगमनामुळे कांद्याच्या किंमती कमी. सोयाबीन विकण्याची सर्वोत्तम वेळ (खरीपापूर्व मागणी).',
+    ctx_3:'[मार्च-मे] कांद्याचे रब्बी हार्वेस्ट येत आहे. किंमती हंगामी नीचांकी. रब्बी पिकातून टोमॅटोचा अतिपुरवठा.',
+    ctx_6:'[जून-सप्टें] पावसाळा. जड पावसाने कांदा/टोमॅटोच्या किंमती वाढू शकतात. सोयाबीन खरीप पेरणी सुरू.',
+    ctx_10:'[ऑक्टो-डिसें] सोयाबीन हार्वेस्ट येत आहे → किंमती मवाळ. खरीप कांदा येतो. दिवाळी सणाची मागणी किंमती टिकवते.',
+    tip1_title:'हार्वेस्ट कॅलेंडर समजून घ्या',
+    tip1_body:'कांद्याच्या किंमती साधारणतः जानेवारी-मार्चमध्ये नीचांकी असतात (रब्बी आगमन) आणि ऑगस्ट-ऑक्टोबरमध्ये शिखरावर. नोव्हेंबरनंतर साठा ठेवल्यास नव्या खरीप मालाने किंमती घसरतात.',
+    tip2_title:'शिखर किंमतीच्या मागे धावू नका',
+    tip2_body:'AI मॉडेल शिखर दिवस सांगते, पण किंमती क्वचितच २-३ दिवसांपेक्षा जास्त काळ शिखरावर राहतात. अंदाजित शिखर खिडकीच्या ±५% मध्ये विकण्याचे नियोजन करा.',
+    tip3_title:'सोयाबीन: नेहमी MSP आधी तपासा',
+    tip3_body:'सोयाबीनचा सरकारी MSP ₹४,८९२/क्विं (२०२४-२५) आहे. स्थानिक मंडई किंमत MSP पेक्षा कमी असल्यास जवळच्या NAFED/FCI खरेदी केंद्राला भेट द्या. MSP मिळवणे तुमचा कायदेशीर अधिकार आहे.',
+    tip4_title:'हवामान परिणाम खरोखर महत्त्वाचा आहे',
+    tip4_body:'जड पाऊस कांद्यावर सर्वाधिक परिणाम करतो (ओल्या मातीत कुजतो → पुरवठा कमी → किंमती वाढतात). दुष्काळ तिन्ही पिकांना बाधतो. सर्वात अचूक अंदाजासाठी अंदाज साधनात प्रत्यक्ष हवामान निवडा.',
+    tip5_title:'फक्त LSTM नाही, एन्सेम्बल वापरा',
+    tip5_body:'ARIMA घटक रेखीय किंमत ट्रेंड पकडतो जे LSTM चुकवू शकते. ७०/३० एन्सेम्बल सातत्याने दोन्ही मॉडेलपेक्षा चांगले कार्य करते — नेहमी एन्सेम्बल कॉलम वापरा.',
+    tip6_title:'तुमचा अहवाल डाउनलोड करा',
+    tip6_body:'संपूर्ण अहवाल — दिवसवार अंदाज, नफा-तोटा गणना व विक्री शिफारससह — जतन करण्यासाठी अंदाज साधनातील PDF डाउनलोड बटण वापरा. खरेदीदारांशी किंवा एजंटसोबत शेअर करण्यासाठी उत्तम.',
+  },
+  hi: {
+    nav_tech:'तकनीक', nav_predict:'मूल्य पूर्वानुमान', nav_foryou:'आपके लिए',
+    fy_label:'लाइव बाज़ार जानकारी',
+    fy_title:'आपकी बाज़ार जानकारी',
+    fy_sub:'मूल्य अलर्ट, मौसम प्रभाव चेतावनी, मौसमी संदर्भ और किसान सुझाव — सब उसी AI इंजन से जो पूर्वानुमान उपकरण चलाता है।',
+    alerts_title:'मूल्य और मौसम अलर्ट',
+    season_title:'वर्तमान मौसम संदर्भ',
+    tips_title:'किसान निर्णय सुझाव',
+    wl_title:'📊 फसल वॉचलिस्ट',
+    wl_date_prefix:'आज के अनुमानित मूल्य',
+    loading:'लोड हो रहा है…',
+    resources_title:'🔗 आधिकारिक संसाधन',
+    res1:'agmarknet.gov.in — लाइव मंडी डेटा',
+    res2:'NHRDF — प्याज मूल्य बुलेटिन',
+    res3:'NAFED — MSP खरीद केंद्र',
+    res4:'मूल्य अनुमान उपकरण खोलें →',
+    accuracy_title:'🎯 मॉडल सटीकता (२०२४-२५)',
+    r2_label:'वास्तविक मंडी रिकॉर्ड पर R²',
+    accuracy_note:'२४ वास्तविक मासिक मंडी रिकॉर्ड (२०२४-२५) पर मूल्यांकित — इंटरपोलेटेड वैलिडेशन नहीं।',
+    alert_badge_price:'मूल्य', alert_badge_weather:'मौसम', alert_badge_msp:'MSP', alert_badge_warn:'चेतावनी',
+    a1_headline:'लासलगाव में प्याज के मूल्य स्थिर हो रहे हैं',
+    a1_body:'अप्रैल २०२६ में रबी हार्वेस्ट आगमन कम हो रहा है। मॉडेल मई-जून तक धीरे-धीरे मूल्य सुधार का अनुमान करता है। गुणवत्ता अच्छी हो तो अल्पकालिक भंडारण पर विचार करें।',
+    a2_headline:'नाशिक में असामयिक बारिश से प्याज की गुणवत्ता प्रभावित हो सकती है',
+    a2_body:'AI नाशिक जिले के प्याज उत्पादकों के लिए जल्दी कटाई और सूखे भंडारण की सलाह देता है। गीले भंडारण से सड़न होती है। व्यापक होने पर मूल्य प्रभाव ×१.०५–१.०८ अनुमानित।',
+    a3_headline:'सोयाबीन MSP ₹४,८९२/क्विं — NAFED खरीद खुली',
+    a3_body:'लातूर मंडी में वर्तमान मूल्य MSP सीमा के पास हैं। ₹४,८९२/क्विं से कम पर बेचने से पहले नज़दीकी NAFED केंद्र जाएं। आप सरकारी समर्थन मूल्य के हकदार हैं।',
+    a4_headline:'टमाटर के मूल्यों पर दबाव — रबी अधिक आपूर्ति',
+    a4_body:'पुणे और नाशिक पट्टी से भारी रबी टमाटर आगमन मूल्यों को दबाए हुए है। मानसून (मई के बाद) आपूर्ति श्रृंखला बाधित होने पर ही सुधार की उम्मीद।',
+    s_onion_name:'प्याज', s_onion_timing:'अप्रैल-जून: रबी आगमन घट रहा है',
+    s_onion_tip:'रबी हार्वेस्ट आगमन धीमा हो रहा है। पुराना स्टॉक खत्म होने पर मई-जून तक मूल्य स्थिर होकर सुधर सकते हैं।',
+    s_tomato_name:'टमाटर', s_tomato_timing:'अप्रैल-मई: गर्मी का मूल्यों पर दबाव',
+    s_tomato_tip:'गर्मी का मौसम — पुणे और नाशिक से आपूर्ति सीमित। मूल्य मध्यम रह सकते हैं। जून-जुलाई में पूर्व-मानसून उछाल पर नज़र रखें।',
+    s_soybean_name:'सोयाबीन', s_soybean_timing:'अप्रैल-मई: खरीफ बुवाई पूर्व खिड़की',
+    s_soybean_tip:'पुराना स्टॉक साफ हो रहा है। मूल्य धीरे-धीरे MSP सीमा (₹४,८९२/क्विं) की ओर जा सकते हैं। MSP से नीचे होने पर NAFED खरीद सक्रिय।',
+    ctx_1:'[जन-फरवरी] कटाई के बाद। भारी आगमन से प्याज के मूल्य कम। सोयाबीन बेचने का सबसे अच्छा समय (खरीफपूर्व मांग)।',
+    ctx_3:'[मार्च-मई] प्याज का रबी हार्वेस्ट आ रहा है। मूल्य मौसमी निम्नतम पर। रबी फसल से टमाटर की अधिक आपूर्ति।',
+    ctx_6:'[जून-सितंबर] मानसून। भारी बारिश प्याज/टमाटर के मूल्य बढ़ा सकती है। सोयाबीन खरीफ बुवाई जारी।',
+    ctx_10:'[अक्टू-दिसंबर] सोयाबीन हार्वेस्ट आ रहा है → मूल्य नरम। खरीफ प्याज आ रहा है। दिवाली त्योहार की मांग मूल्यों को सहारा देती है।',
+    tip1_title:'हार्वेस्ट कैलेंडर समझें',
+    tip1_body:'प्याज के मूल्य आमतौर पर जनवरी-मार्च में सबसे कम होते हैं (रबी हार्वेस्ट आगमन) और अगस्त-अक्टूबर में शिखर पर। नवंबर के बाद स्टॉक रखने पर नए खरीफ माल से मूल्य गिरते हैं।',
+    tip2_title:'शिखर मूल्य के पीछे न भागें',
+    tip2_body:'AI मॉडेल शिखर दिन बताता है, लेकिन मूल्य शायद ही कभी २-३ दिन से अधिक शिखर पर रहते हैं। अनुमानित शिखर खिड़की के ±५% में बेचने की योजना बनाएं।',
+    tip3_title:'सोयाबीन: हमेशा पहले MSP जाँचें',
+    tip3_body:'सोयाबीन का सरकारी MSP ₹४,८९२/क्विं (२०२४-२५) है। यदि स्थानिक मंडी मूल्य MSP से कम है तो नज़दीकी NAFED/FCI खरीद केंद्र जाएं। MSP पाना आपका कानूनी अधिकार है।',
+    tip4_title:'जलवायु समायोजन वास्तविक है',
+    tip4_body:'भारी बारिश प्याज को सबसे अधिक प्रभावित करती है (गीली मिट्टी में सड़ता है → आपूर्ति घटती है → मूल्य बढ़ते हैं)। सूखा तीनों फसलों को प्रभावित करता है। सबसे सटीक अनुमान के लिए पूर्वानुमान उपकरण में वास्तविक जलवायु डालें।',
+    tip5_title:'केवल LSTM नहीं, एन्सेम्बल उपयोग करें',
+    tip5_body:'ARIMA घटक रेखीय मूल्य रुझान पकड़ता है जो LSTM चूक सकता है। ७०/३० एन्सेम्बल लगातार दोनों मॉडलों से बेहतर प्रदर्शन करता है — हमेशा एन्सेम्बल कॉलम उपयोग करें।',
+    tip6_title:'अपनी रिपोर्ट डाउनलोड करें',
+    tip6_body:'दिन-दर-दिन पूर्वानुमान, लाभ-हानि गणना और बिक्री सिफारिश के साथ पूरी रिपोर्ट सहेजने के लिए पूर्वानुमान उपकरण में PDF डाउनलोड बटन उपयोग करें।',
+  },
+};
+
+// ── Translation helper ───────────────────────────────────
+function fy(key) {
+  const lang = window.AGRI_LANG || 'en';
+  const d = FY_TRANSLATIONS[lang] || FY_TRANSLATIONS['en'];
+  return d[key] !== undefined ? d[key] : (FY_TRANSLATIONS['en'][key] || key);
+}
+
+// ── Seasonal context map ─────────────────────────────────
+function getSeasonalContext(month) {
+  if (month <= 2)  return fy('ctx_1');
+  if (month <= 5)  return fy('ctx_3');
+  if (month <= 9)  return fy('ctx_6');
+  return fy('ctx_10');
+}
+
+// ── Apply all translations ───────────────────────────────
+function applyFyLang() {
+  const lang = window.AGRI_LANG || 'en';
+  document.documentElement.lang = lang;
+  if (lang === 'mr' || lang === 'hi') {
+    document.body.style.fontFamily = "'Noto Sans Devanagari', 'Plus Jakarta Sans', sans-serif";
+  } else {
+    document.body.style.fontFamily = '';
+  }
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = fy(key);
+    if (val) el.textContent = val;
+  });
+
+  // Active lang button
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active',
+      (btn.textContent.trim() === 'EN'    && lang === 'en') ||
+      (btn.textContent.trim() === 'मराठी' && lang === 'mr') ||
+      (btn.textContent.trim() === 'हिंदी' && lang === 'hi')
+    );
+  });
+
+  // Rebuild all dynamic content with new language
+  buildAlerts();
+  buildSeasonGrid();
+  buildTips();
+  buildSeasonContext();
+  buildWlDate();
+}
+
+// ── Override global setLang ──────────────────────────────
+window.setLang = function(lang) {
+  window.AGRI_LANG = lang;
+  localStorage.setItem('agri_lang', lang);
+  applyFyLang();
+};
+
+// ════════════════════════════════════════════════════════════
+//  DYNAMIC BUILDERS
+// ════════════════════════════════════════════════════════════
+
+function buildAlerts() {
+  const ALERTS = [
+    { typeCls:'at-price',   badgeKey:'alert_badge_price',   icon:'⚡', hlKey:'a1_headline', bodyKey:'a1_body' },
+    { typeCls:'at-weather', badgeKey:'alert_badge_weather', icon:'🌧', hlKey:'a2_headline', bodyKey:'a2_body' },
+    { typeCls:'at-msp',     badgeKey:'alert_badge_msp',     icon:'📋', hlKey:'a3_headline', bodyKey:'a3_body' },
+    { typeCls:'at-warn',    badgeKey:'alert_badge_warn',    icon:'📉', hlKey:'a4_headline', bodyKey:'a4_body' },
+  ];
+  document.getElementById('alertsStack').innerHTML = ALERTS.map(a => `
+    <div class="alert-card reveal">
+      <div class="alert-icon">${a.icon}</div>
+      <div>
+        <span class="alert-type-badge ${a.typeCls}">${fy(a.badgeKey)}</span>
+        <div class="alert-headline">${fy(a.hlKey)}</div>
+        <div class="alert-body">${fy(a.bodyKey)}</div>
+      </div>
+    </div>`).join('');
+  initReveal();
+}
+
+function buildSeasonGrid() {
+  const SEASON = [
+    { emoji:'🧅', nameKey:'s_onion_name',   timingKey:'s_onion_timing',   tipKey:'s_onion_tip' },
+    { emoji:'🍅', nameKey:'s_tomato_name',  timingKey:'s_tomato_timing',  tipKey:'s_tomato_tip' },
+    { emoji:'🫘', nameKey:'s_soybean_name', timingKey:'s_soybean_timing', tipKey:'s_soybean_tip' },
+  ];
+  document.getElementById('seasonGrid').innerHTML = SEASON.map((s, i) => `
+    <div class="season-card reveal ${i > 0 ? 'anim-delay-' + i : ''}">
+      <div class="season-crop">${s.emoji}</div>
+      <div class="season-name">${fy(s.nameKey)}</div>
+      <div class="season-timing">${fy(s.timingKey)}</div>
+      <div class="season-tip">${fy(s.tipKey)}</div>
+    </div>`).join('');
+  initReveal();
+}
+
+function buildTips() {
+  const TIPS = [
+    { num:'TIP 01', titleKey:'tip1_title', bodyKey:'tip1_body', delay:'' },
+    { num:'TIP 02', titleKey:'tip2_title', bodyKey:'tip2_body', delay:'anim-delay-1' },
+    { num:'TIP 03', titleKey:'tip3_title', bodyKey:'tip3_body', delay:'anim-delay-2' },
+    { num:'TIP 04', titleKey:'tip4_title', bodyKey:'tip4_body', delay:'anim-delay-3' },
+    { num:'TIP 05', titleKey:'tip5_title', bodyKey:'tip5_body', delay:'anim-delay-4' },
+    { num:'TIP 06', titleKey:'tip6_title', bodyKey:'tip6_body', delay:'anim-delay-5' },
+  ];
+  document.getElementById('tipsGrid').innerHTML = TIPS.map(t => `
+    <div class="tip-card reveal ${t.delay}">
+      <div class="tip-num">${t.num}</div>
+      <div class="tip-title">${fy(t.titleKey)}</div>
+      <div class="tip-body">${fy(t.bodyKey)}</div>
+    </div>`).join('');
+  initReveal();
+}
+
+function buildSeasonContext() {
+  const month = new Date().getMonth() + 1;
+  document.getElementById('seasonContextEl').textContent = getSeasonalContext(month);
+}
+
+function buildWlDate() {
+  const d = new Date();
+  document.getElementById('wlDate').textContent =
+    `${fy('wl_date_prefix')} · ${d.toLocaleDateString('en-IN', { month:'short', year:'numeric' })}`;
+}
+
+// ════════════════════════════════════════════════════════════
+//  WATCHLIST & TICKER
+// ════════════════════════════════════════════════════════════
+
+const CROP_NAMES = {
+  en: { Onion:'Onion', Tomato:'Tomato', Soybean:'Soybean' },
+  mr: { Onion:'कांदा', Tomato:'टोमॅटो', Soybean:'सोयाबीन' },
+  hi: { Onion:'प्याज', Tomato:'टमाटर', Soybean:'सोयाबीन' },
+};
+const EMOJIS  = { Onion:'🧅', Tomato:'🍅', Soybean:'🫘' };
+const MARKETS = { Onion:'Lasalgaon APMC', Tomato:'Pune APMC', Soybean:'Latur APMC' };
+
+async function buildWatchlist() {
+  const items = await fetchWatchlist();
+  const lang  = window.AGRI_LANG || 'en';
+  const names = CROP_NAMES[lang] || CROP_NAMES['en'];
+  document.getElementById('watchlistEl').innerHTML = items.map(it => `
+    <div class="wl-item">
+      <div class="wl-crop">
+        <div class="wl-emoji">${EMOJIS[it.crop] || '🌾'}</div>
+        <div>
+          <div class="wl-name">${names[it.crop] || it.crop}</div>
+          <div class="wl-market">${MARKETS[it.crop] || ''}</div>
+        </div>
+      </div>
+      <div class="wl-right">
+        <div class="wl-price">₹${it.price.toLocaleString('en-IN')}</div>
+        <div class="wl-change ${it.trend}">${it.change > 0 ? '+' : ''}${it.change}% ${it.trend === 'up' ? '↑' : '↓'}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function buildTicker() {
+  const items = await fetchWatchlist();
+  const lang  = window.AGRI_LANG || 'en';
+  const names = CROP_NAMES[lang] || CROP_NAMES['en'];
+  const html  = items.map(it => `
+    <div class="ticker-item">
+      <span>${EMOJIS[it.crop] || '🌾'}</span>
+      <span class="ticker-name">${names[it.crop] || it.crop}</span>
+      <span class="ticker-price">₹${it.price.toLocaleString('en-IN')}</span>
+      <span class="ticker-change ${it.trend}">${it.change > 0 ? '+' : ''}${it.change}%</span>
+    </div>`).join('');
+  document.getElementById('tickerInner').innerHTML = html + html;
+}
+
+// ════════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('agri_lang') || 'en';
+  window.AGRI_LANG = saved;
+  applyFyLang();
+  buildWatchlist();
+  buildTicker();
+});
+</script>
+</body>
+</html>

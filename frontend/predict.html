@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Prediction Tool — AgriPredict.ai</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+.predict-page { padding: 80px 0 60px; }
+.predict-header { padding: 48px 0 40px; text-align: center; }
+.predict-grid { display: grid; grid-template-columns: 360px 1fr; gap: 22px; align-items: start; }
+
+/* Left panel */
+.params-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 28px; backdrop-filter: blur(16px); position: sticky; top: 82px; }
+.params-title { font-size: 17px; font-weight: 700; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.form-stack { display: flex; flex-direction: column; gap: 18px; }
+
+.execute-btn {
+  width: 100%; background: var(--green); color: #000;
+  padding: 14px; border-radius: var(--r-sm);
+  font-size: 14px; font-weight: 700; letter-spacing: 0.02em;
+  transition: all var(--t) var(--ease);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 6px; position: relative; overflow: hidden;
+  font-family: 'Noto Sans Devanagari', 'Plus Jakarta Sans', sans-serif;
+}
+.execute-btn:hover:not(:disabled) { background: var(--green-hi); box-shadow: 0 6px 24px rgba(34,212,146,0.3); }
+.execute-btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%); transform: translateX(-100%); transition: transform 0.5s ease; }
+.execute-btn:hover::before { transform: translateX(100%); }
+
+.download-row { display: flex; gap: 10px; align-items: center; padding: 14px 16px; background: rgba(240,180,41,0.06); border: 1px solid rgba(240,180,41,0.20); border-radius: var(--r-md); }
+.download-row-info { flex: 1; }
+.download-row-title { font-size: 12px; font-weight: 700; color: var(--amber); margin-bottom: 2px; }
+.download-row-sub   { font-size: 11px; color: var(--text-lo); font-family: var(--mono); }
+#downloadReportBtn {
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 7px;
+  background: transparent; color: var(--amber);
+  padding: 9px 16px; border-radius: var(--r-sm);
+  font-size: 12px; font-weight: 700; border: 1px solid var(--amber);
+  transition: all var(--t) var(--ease); cursor: pointer; white-space: nowrap;
+  font-family: 'Noto Sans Devanagari', 'Plus Jakarta Sans', sans-serif;
+}
+#downloadReportBtn:hover { background: var(--amber); color: #000; }
+#downloadReportBtn:disabled { opacity: 0.5; pointer-events: none; }
+
+/* Right panel */
+.results-panel { display: flex; flex-direction: column; gap: 18px; }
+.empty-state { background: var(--bg-card); border: 1px dashed var(--border-hi); border-radius: var(--r-lg); padding: 80px 40px; text-align: center; backdrop-filter: blur(10px); }
+.empty-icon  { font-size: 56px; margin-bottom: 14px; opacity: 0.5; }
+.empty-hint  { color: var(--text-lo); font-family: var(--mono); font-size: 12px; margin-top: 8px; }
+
+/* KPIs */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); padding: 20px 18px; backdrop-filter: blur(12px); transition: all var(--t) var(--ease); }
+.kpi-card.featured { border-color: rgba(34,212,146,0.3); background: linear-gradient(135deg, var(--bg-card), rgba(34,212,146,0.04)); }
+.kpi-card:hover { border-color: var(--border-hi); }
+.kpi-val { font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--green); line-height: 1; margin-bottom: 4px; }
+.kpi-lbl { font-size: 11px; color: var(--text-mid); margin-bottom: 6px; }
+
+/* Charts */
+.chart-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 26px 26px 18px; backdrop-filter: blur(12px); }
+.chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+.chart-title { font-size: 15px; font-weight: 700; }
+.chart-legend { display: flex; gap: 16px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-mid); }
+.legend-dot  { width: 8px; height: 8px; border-radius: 50%; }
+.chart-wrap  { position: relative; height: 260px; }
+
+/* Table */
+.table-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; backdrop-filter: blur(12px); }
+.table-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.table-title  { font-size: 15px; font-weight: 700; }
+.table-actions { display: flex; align-items: center; gap: 10px; }
+.forecast-table { width: 100%; border-collapse: collapse; }
+.forecast-table th { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-lo); padding: 12px 16px; text-align: left; background: var(--bg-raised); border-bottom: 1px solid var(--border); }
+.forecast-table td { font-family: var(--mono); font-size: 13px; padding: 11px 16px; border-bottom: 1px solid rgba(34,212,146,0.05); color: var(--text-mid); }
+.forecast-table tr:last-child td { border-bottom: none; }
+.forecast-table tr:hover td { background: rgba(34,212,146,0.03); }
+.forecast-table .best-row td  { color: var(--green); background: rgba(34,212,146,0.06); }
+.forecast-table .avoid-row td { color: var(--red);   background: rgba(240,82,101,0.04); }
+.td-day      { color: var(--text-lo); }
+.td-ensemble { color: var(--text-hi) !important; font-weight: 700; }
+.note-tag    { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
+.note-best   { background: rgba(34,212,146,0.15); color: var(--green); }
+.note-avoid  { background: rgba(240,82,101,0.15); color: var(--red); }
+
+/* Info row */
+.info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.info-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 24px; backdrop-filter: blur(12px); }
+.info-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-lo); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+
+/* Reality check */
+.reality-status { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.reality-range  { font-family: var(--mono); font-size: 12px; color: var(--text-mid); margin-bottom: 10px; }
+.reality-note   { font-size: 13px; color: var(--text-mid); line-height: 1.6; margin-bottom: 14px; }
+.conf-bar-wrap  { height: 3px; background: var(--bg-raised); border-radius: 2px; overflow: hidden; }
+.conf-bar       { height: 100%; background: var(--green); border-radius: 2px; width: 0; transition: width 1.2s var(--ease); }
+.conf-label     { font-size: 11px; color: var(--text-lo); margin-top: 6px; }
+
+/* Profit */
+.profit-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.profit-row:last-child { border-bottom: none; }
+.profit-key { font-size: 13px; color: var(--text-mid); }
+.profit-val { font-family: var(--mono); font-size: 13.5px; font-weight: 700; }
+.val-pos   { color: var(--green); }
+.val-neg   { color: var(--red); }
+.val-mid   { color: var(--text-hi); }
+.val-amber { color: var(--amber); }
+
+/* Metrics row */
+.metrics-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); padding: 18px 22px; backdrop-filter: blur(12px); }
+.metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 12px; }
+.metric-item .m-val { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--green); }
+.metric-item .m-lbl { font-size: 11px; color: var(--text-lo); margin-top: 2px; }
+
+/* Verdict */
+.verdict-banner { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 22px 28px; backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.verdict-text   { font-size: 14px; font-weight: 600; }
+.verdict-action { font-size: 13px; color: var(--text-mid); line-height: 1.6; flex: 1; min-width: 260px; }
+
+/* Mode bar */
+.mode-bar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); font-family: var(--mono); font-size: 11px; color: var(--text-lo); margin-bottom: 4px; }
+.mode-bar .mode-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* Lang switcher */
+.lang-switcher { display: flex; align-items: center; gap: 4px; background: rgba(34,212,146,0.07); border: 1px solid var(--border); border-radius: 100px; padding: 3px; }
+.lang-btn { padding: 5px 13px; border-radius: 100px; font-size: 12px; font-weight: 600; color: var(--text-mid); cursor: pointer; transition: all var(--t) var(--ease); border: none; background: transparent; font-family: 'Noto Sans Devanagari', 'Plus Jakarta Sans', sans-serif; white-space: nowrap; }
+.lang-btn.active { background: var(--green); color: #000; }
+.lang-btn:hover:not(.active) { color: var(--text-hi); background: rgba(34,212,146,0.10); }
+
+@media (max-width: 1100px) { .predict-grid { grid-template-columns: 1fr; } .params-panel { position: static; } .kpi-row { grid-template-columns: repeat(2, 1fr); } .info-row { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .kpi-row { grid-template-columns: 1fr 1fr; } .lang-btn { padding: 4px 9px; font-size: 11px; } }
+</style>
+</head>
+<body>
+
+<div class="farm-bg"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">AgriPredict<span>.ai</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html" data-i18n="nav_tech">Technology</a></li>
+      <li><a href="predict.html" class="active" data-i18n="nav_predict">Prediction Tool</a></li>
+      <li><a href="foryou.html" data-i18n="nav_foryou">For You</a></li>
+    </ul>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="lang-switcher">
+        <button class="lang-btn active" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" onclick="setLang('mr')">मराठी</button>
+        <button class="lang-btn" onclick="setLang('hi')">हिंदी</button>
+      </div>
+      <div class="nav-badge"><div class="nav-badge-dot"></div>BiLSTM · ARIMA · Live</div>
+    </div>
+  </div>
+</nav>
+
+<div class="page predict-page">
+  <div class="container">
+
+    <div class="predict-header anim-fade-up">
+      <div class="mono-label" style="margin-bottom:8px" data-i18n="predict_label">AI Forecast Engine</div>
+      <h1 class="section-title" data-i18n="predict_title">Prediction Tool</h1>
+      <p class="section-sub" style="margin:10px auto 0;text-align:center" data-i18n="predict_sub">
+        Select your crop, market location, and climate. The BiLSTM + ARIMA ensemble forecasts wholesale mandi prices up to 90 days ahead.
+      </p>
+    </div>
+
+    <div class="predict-grid">
+
+      <!-- LEFT: Parameters -->
+      <div class="params-panel anim-fade-up anim-delay-1">
+        <div class="params-title"><span>⚙️</span> <span data-i18n="params_title">Parameters</span></div>
+        <div class="form-stack">
+
+          <div class="field-group">
+            <label class="field-label" for="cropSelect" data-i18n="label_crop">Select Crop</label>
+            <div class="select-wrap">
+              <select id="cropSelect" class="field-select">
+                <option value="Onion" data-i18n-opt="opt_onion">🧅 Onion (Lasalgaon APMC, Nashik)</option>
+                <option value="Tomato" data-i18n-opt="opt_tomato">🍅 Tomato (Pune APMC)</option>
+                <option value="Soybean" data-i18n-opt="opt_soybean">🫘 Soybean (Latur APMC)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="locationInput" data-i18n="label_location">Market Location</label>
+            <input id="locationInput" class="field-input" type="text" autocomplete="off" />
+            <span id="locationErr" style="color:var(--red);font-size:12px;display:none" data-i18n="location_err">Please enter a market location.</span>
+          </div>
+
+          <div id="marketHint" style="background:var(--green-glow);border:1px solid var(--border-hi);border-radius:var(--r-sm);padding:10px 14px;font-size:12px;color:var(--green);font-family:var(--mono)"></div>
+
+          <div class="field-group">
+            <label class="field-label" for="climateSelect" data-i18n="label_climate">Climate / Weather</label>
+            <div class="select-wrap">
+              <select id="climateSelect" class="field-select">
+                <option value="normal"  data-i18n-opt="climate_normal">☀️ Normal (×1.00)</option>
+                <option value="sunny"   data-i18n-opt="climate_sunny">🌤 Sunny / Dry (×1.02)</option>
+                <option value="cold"    data-i18n-opt="climate_cold">❄️ Cold / Frost (×1.08)</option>
+                <option value="rainy"   data-i18n-opt="climate_rainy">🌧 Rainy / Flood (×1.12)</option>
+                <option value="drought" data-i18n-opt="climate_drought">🏜 Drought (×1.18)</option>
+              </select>
+            </div>
+            <span id="climateNote" style="font-size:11.5px;color:var(--text-mid);margin-top:4px"></span>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" data-i18n="label_horizon">Forecast Horizon</label>
+            <div class="range-row">
+              <input id="daysRange" class="field-range" type="range" min="7" max="90" value="60" />
+              <span id="daysVal" class="range-val">60 <span data-i18n="days_unit">days</span></span>
+            </div>
+            <span style="font-size:11px;color:var(--text-lo)" data-i18n="horizon_hint">Recommended: 60 days (most reliable)</span>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="notesInput" data-i18n="label_notes">Additional Notes (optional)</label>
+            <input id="notesInput" class="field-input" type="text" autocomplete="off" />
+          </div>
+
+          <button id="executeBtn" class="execute-btn" onclick="runPrediction()">
+            <span class="btn-text" data-i18n="execute_btn">🚀 Execute AI Model</span>
+            <div class="spinner"></div>
+          </button>
+
+          <div class="download-row" id="downloadRow" style="display:none">
+            <div class="download-row-info">
+              <div class="download-row-title" data-i18n="download_title">📄 Download Report</div>
+              <div class="download-row-sub" data-i18n="download_sub">Full PDF with forecast, P&L & advice</div>
+            </div>
+            <button id="downloadReportBtn" onclick="triggerDownload()">
+              <span class="btn-text">⬇ PDF</span>
+              <div class="spinner-amber"></div>
+            </button>
+          </div>
+
+          <div class="error-banner" id="errorBanner">
+            <span>⚠</span><span id="errorMsg"></span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: Results -->
+      <div class="results-panel" id="resultsPanel">
+
+        <div class="mode-bar" id="modeBar" style="display:none">
+          <div class="mode-dot" id="modeDot"></div>
+          <span id="modeText"></span>
+        </div>
+
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">🌾</div>
+          <p style="color:var(--text-mid);font-size:15px" data-i18n="empty_main">Awaiting prediction parameters.</p>
+          <p class="empty-hint" data-i18n="empty_hint">Fill in the form on the left and click Execute AI Model.</p>
+        </div>
+
+        <div id="resultContent" style="display:none;flex-direction:column;gap:18px">
+
+          <div class="kpi-row" id="kpiRow"></div>
+
+          <div class="metrics-card" id="metricsCard" style="display:none">
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px" data-i18n="metrics_title">🎯 Model Accuracy — Real 2024-25 Mandi Data</div>
+            <div class="metrics-grid" id="metricsGrid"></div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title" id="chartTitle"></div>
+              <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#22d492"></div><span data-i18n="legend_ensemble">Ensemble</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#4d9fff"></div><span data-i18n="legend_lstm">LSTM</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#f0b429"></div><span data-i18n="legend_arima">ARIMA</span></div>
+              </div>
+            </div>
+            <div class="chart-wrap"><canvas id="forecastChart"></canvas></div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title" data-i18n="hist_chart_title">Historical Prices — Last 12 Months</div>
+              <span id="histMarketLabel" class="badge badge-green"></span>
+            </div>
+            <div class="chart-wrap"><canvas id="histChart"></canvas></div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-header">
+              <div class="table-title" data-i18n="table_title">📅 Day-by-Day Forecast</div>
+              <div class="table-actions">
+                <span class="badge badge-blue" id="confBadge"></span>
+              </div>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="forecast-table" id="forecastTable">
+                <thead>
+                  <tr>
+                    <th data-i18n="th_day">Day</th>
+                    <th data-i18n="th_date">Date</th>
+                    <th>LSTM ₹</th>
+                    <th>ARIMA ₹</th>
+                    <th data-i18n="th_ensemble">Ensemble ₹</th>
+                    <th data-i18n="th_conf">Conf</th>
+                    <th data-i18n="th_note">Note</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div class="info-card">
+              <div class="info-title" data-i18n="reality_title">Market Reality Check</div>
+              <div class="reality-status">
+                <span id="realityPill" class="badge"></span>
+                <span id="realityConf" style="font-family:var(--mono);font-size:12px;color:var(--text-mid)"></span>
+              </div>
+              <div class="reality-range" id="realityRange"></div>
+              <div class="reality-note"  id="realityNote"></div>
+              <div class="conf-bar-wrap"><div class="conf-bar" id="confBar"></div></div>
+              <div class="conf-label"    id="confLabel"></div>
+            </div>
+            <div class="info-card">
+              <div class="info-title" data-i18n="profit_title">Profit &amp; Loss — per Quintal (CACP 2024-25)</div>
+              <div id="profitRows"></div>
+            </div>
+          </div>
+
+          <div class="verdict-banner" id="verdictBanner">
+            <div>
+              <div class="mono-label" style="margin-bottom:6px" data-i18n="recommendation_label">Recommendation</div>
+              <div class="verdict-text"   id="verdictText"></div>
+            </div>
+            <div class="verdict-action" id="verdictAction"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:28px 0;text-align:center;color:var(--text-lo);font-size:13px;font-family:var(--mono);margin-top:60px">
+  © 2026 AgriPredict Engineering · BiLSTM + ARIMA Ensemble · Data: agmarknet.gov.in / NHRDF / CEIC
+</footer>
+
+<script src="script.js"></script>
+<script>
+// ════════════════════════════════════════════════════════════
+//  PAGE-LEVEL TRANSLATIONS
+// ════════════════════════════════════════════════════════════
+const PAGE_TRANSLATIONS = {
+  en: {
+    nav_tech:'Technology', nav_predict:'Prediction Tool', nav_foryou:'For You',
+    predict_label:'AI Forecast Engine',
+    predict_title:'Prediction Tool',
+    predict_sub:'Select your crop, market location, and climate. The BiLSTM + ARIMA ensemble forecasts wholesale mandi prices up to 90 days ahead.',
+    params_title:'Parameters',
+    label_crop:'Select Crop',
+    label_location:'Market Location',
+    location_placeholder:'e.g. Nashik, Solapur, Pune, Nagpur…',
+    location_err:'Please enter a market location.',
+    label_climate:'Climate / Weather',
+    label_horizon:'Forecast Horizon',
+    days_unit:'days',
+    horizon_hint:'Recommended: 60 days (most reliable)',
+    label_notes:'Additional Notes (optional)',
+    notes_placeholder:'e.g. Hailstorm hit Nashik last week…',
+    execute_btn:'🚀 Execute AI Model',
+    download_title:'📄 Download Report',
+    download_sub:'Full PDF with forecast, P&L & advice',
+    empty_main:'Awaiting prediction parameters.',
+    empty_hint:'Fill in the form on the left and click Execute AI Model.',
+    metrics_title:'🎯 Model Accuracy — Real 2024-25 Mandi Data',
+    legend_ensemble:'Ensemble', legend_lstm:'LSTM', legend_arima:'ARIMA',
+    hist_chart_title:'Historical Prices — Last 12 Months',
+    table_title:'📅 Day-by-Day Forecast',
+    th_day:'Day', th_date:'Date', th_ensemble:'Ensemble ₹', th_conf:'Conf', th_note:'Note',
+    reality_title:'Market Reality Check',
+    profit_title:'Profit & Loss — per Quintal (CACP 2024-25)',
+    recommendation_label:'Recommendation',
+    opt_onion:'🧅 Onion (Lasalgaon APMC, Nashik)',
+    opt_tomato:'🍅 Tomato (Pune APMC)',
+    opt_soybean:'🫘 Soybean (Latur APMC)',
+    climate_normal:'☀️ Normal (×1.00)', climate_sunny:'🌤 Sunny / Dry (×1.02)',
+    climate_cold:'❄️ Cold / Frost (×1.08)', climate_rainy:'🌧 Rainy / Flood (×1.12)',
+    climate_drought:'🏜 Drought (×1.18)',
+    mkt_onion:'Markets: Lasalgaon · Pimpalgaon · Pune · Solapur · Nagpur · Mumbai',
+    mkt_tomato:'Markets: Pune (Moshi/Manjri) · Nashik · Satara · Mumbai · Nagpur · Aurangabad',
+    mkt_soybean:'Markets: Latur · Akola · Amravati · Nagpur · Washim · Hingoli',
+    climate_note_sunny:'Dry conditions → onion and tomato supply may tighten.',
+    climate_note_cold:'Frost risk → all crops affected, onion worst.',
+    climate_note_rainy:'Heavy rain → onion rots in soil, soybean supply increases.',
+    climate_note_drought:'Drought → all crops hurt. Prices likely to rise significantly.',
+    kpi_peak:'Peak Forecast', kpi_sentiment:'Sentiment', kpi_today:'Today Est.',
+    kpi_model:'Model', kpi_avg:'Avg forecast',
+    loading_msg:'Connecting to AI model... (first inference may take 20-30 seconds)',
+    conf_suffix:'confidence',
+    seasonal_range:'Seasonal range',
+    sel_today:'Sell TODAY → profit', sel_peak:'Sell at PEAK → profit',
+    cultivation_cost:'Cultivation cost',
+    govt_msp:'Govt MSP',
+    msp_status:'MSP Status',
+    sell_store:'⬆ STORE — Prices forecast to rise',
+    sell_now_fall:'⬇ SELL NOW — Prices falling',
+    sell_caution:'⚠ CAUTION — Selling today = LOSS',
+    sell_stable:'≈ STABLE — Sell when price reaches',
+    best_sell:'BEST SELL', avoid:'AVOID',
+    conf_badge_sfx:'confidence',
+    uncertainty:'uncertainty band at this forecast horizon',
+    realistic:'✓ REALISTIC', optimistic:'⚠ OPTIMISTIC', conservative:'↑ CONSERVATIVE',
+    note_optimistic:'Peak prediction exceeds typical seasonal high. Conservative estimate:',
+    note_conservative:'Prediction below typical seasonal floor. Adjusted estimate:',
+    note_realistic:'Prediction aligns with typical seasonal range for this period.',
+    consider_store:'Consider storing up to', days_sfx:'days. Target:',
+    sell_within:'Sell when price reaches', above_5:'(within ±5% of target).',
+    downward:'Market trend is downward. Do not hold — prices are forecast to drop over the next',
+    days_sfx2:'days.',
+    caution_msp:'Check government MSP procurement at',
+    caution_nafed:'via nearest NAFED centre.',
+    caution_storage:'Consider storage or wait for seasonal recovery.',
+    stable_wait:"Prices stable. Do not wait indefinitely — sell within 2 weeks if no clear upward movement observed.",
+    ai_mode:'AI MODE — Real BiLSTM model loaded',
+    demo_mode:'DEMO MODE — Statistical simulation (place .keras files in backend/models/ for AI mode)',
+    proj_prefix:'Price Projection',
+    hist_months:'Last 12 Months',
+    ai_active:'● AI ACTIVE', demo:'◎ DEMO MODE',
+  },
+  mr: {
+    nav_tech:'तंत्रज्ञान', nav_predict:'किंमत अंदाज', nav_foryou:'तुमच्यासाठी',
+    predict_label:'AI अंदाज इंजिन',
+    predict_title:'किंमत अंदाज साधन',
+    predict_sub:'तुमचे पीक, बाजाराचे ठिकाण व हवामान निवडा. BiLSTM + ARIMA एन्सेम्बल ९० दिवसांपर्यंतच्या मंडई घाऊक किंमती सांगते.',
+    params_title:'मापदंड',
+    label_crop:'पीक निवडा',
+    label_location:'बाजाराचे ठिकाण',
+    location_placeholder:'उदा. नाशिक, सोलापूर, पुणे, नागपूर…',
+    location_err:'कृपया बाजाराचे ठिकाण टाका.',
+    label_climate:'हवामान / वातावरण',
+    label_horizon:'अंदाज कालावधी',
+    days_unit:'दिवस',
+    horizon_hint:'शिफारस: ६० दिवस (सर्वात विश्वसनीय)',
+    label_notes:'अतिरिक्त नोट्स (पर्यायी)',
+    notes_placeholder:'उदा. गेल्या आठवड्यात नाशिकमध्ये गारपीट झाली…',
+    execute_btn:'🚀 AI मॉडेल चालवा',
+    download_title:'📄 अहवाल डाउनलोड करा',
+    download_sub:'अंदाज, नफा-तोटा व सल्ल्यासह संपूर्ण PDF',
+    empty_main:'अंदाजासाठी मापदंड भरण्याची प्रतीक्षा.',
+    empty_hint:'डाव्या बाजूचा फॉर्म भरा आणि AI मॉडेल चालवा वर क्लिक करा.',
+    metrics_title:'🎯 मॉडेल अचूकता — वास्तविक २०२४-२५ मंडई डेटा',
+    legend_ensemble:'एन्सेम्बल', legend_lstm:'LSTM', legend_arima:'ARIMA',
+    hist_chart_title:'ऐतिहासिक किंमती — गेले १२ महिने',
+    table_title:'📅 दिवसवार अंदाज',
+    th_day:'दिवस', th_date:'तारीख', th_ensemble:'एन्सेम्बल ₹', th_conf:'विश्वास', th_note:'नोट',
+    reality_title:'बाजार वास्तव तपासणी',
+    profit_title:'नफा/तोटा — प्रति क्विंटल (CACP २०२४-२५)',
+    recommendation_label:'शिफारस',
+    opt_onion:'🧅 कांदा (लासलगाव APMC, नाशिक)',
+    opt_tomato:'🍅 टोमॅटो (पुणे APMC)',
+    opt_soybean:'🫘 सोयाबीन (लातूर APMC)',
+    climate_normal:'☀️ सामान्य (×१.००)', climate_sunny:'🌤 उन्हाळा/कोरडे (×१.०२)',
+    climate_cold:'❄️ थंड/दंव (×१.०८)', climate_rainy:'🌧 पावसाळा/पूर (×१.१२)',
+    climate_drought:'🏜 दुष्काळ (×१.१८)',
+    mkt_onion:'बाजार: लासलगाव · पिंपळगाव · पुणे · सोलापूर · नागपूर · मुंबई',
+    mkt_tomato:'बाजार: पुणे (मोशी/मांजरी) · नाशिक · सातारा · मुंबई · नागपूर · औरंगाबाद',
+    mkt_soybean:'बाजार: लातूर · अकोला · अमरावती · नागपूर · वाशीम · हिंगोली',
+    climate_note_sunny:'कोरड्या हवामानामुळे कांदा व टोमॅटोचा पुरवठा कमी होऊ शकतो.',
+    climate_note_cold:'दंव धोका — सर्व पिकांवर परिणाम, कांद्यावर सर्वाधिक.',
+    climate_note_rainy:'जड पाऊस → कांदा जमिनीत कुजतो, सोयाबीन पुरवठा वाढतो.',
+    climate_note_drought:'दुष्काळ → सर्व पिके प्रभावित. किंमती लक्षणीयरीत्या वाढण्याची शक्यता.',
+    kpi_peak:'शिखर अंदाज', kpi_sentiment:'भावना', kpi_today:'आजचा अंदाज',
+    kpi_model:'मॉडेल', kpi_avg:'सरासरी अंदाज',
+    loading_msg:'AI मॉडेलशी जोडणी होत आहे... (पहिल्या अंदाजास २०-३० सेकंद लागू शकतात)',
+    conf_suffix:'विश्वासार्हता',
+    seasonal_range:'हंगामी श्रेणी',
+    sel_today:'आज विका → नफा', sel_peak:'शिखरावर विका → नफा',
+    cultivation_cost:'उत्पादन खर्च',
+    govt_msp:'सरकारी MSP',
+    msp_status:'MSP स्थिती',
+    sell_store:'⬆ साठवा — किंमती वाढणार आहेत',
+    sell_now_fall:'⬇ आत्ता विका — किंमती घसरत आहेत',
+    sell_caution:'⚠ सावधान — आज विकणे = तोटा',
+    sell_stable:'≈ स्थिर — या किंमतीवर विका',
+    best_sell:'सर्वोत्तम वेळ', avoid:'टाळा',
+    conf_badge_sfx:'विश्वासार्हता',
+    uncertainty:'या अंदाज क्षितिजावर अनिश्चितता बँड',
+    realistic:'✓ वास्तव', optimistic:'⚠ आशावादी', conservative:'↑ सावध',
+    note_optimistic:'शिखर अंदाज सामान्य हंगामी उच्चापेक्षा जास्त. सावध अंदाज:',
+    note_conservative:'अंदाज सामान्य हंगामी खालच्या मर्यादेपेक्षा कमी. समायोजित अंदाज:',
+    note_realistic:'अंदाज या काळाच्या सामान्य हंगामी श्रेणीशी जुळतो.',
+    consider_store:'जास्तीत जास्त साठवा', days_sfx:'दिवस. लक्ष्य:',
+    sell_within:'या किंमतीवर विका', above_5:'(लक्ष्याच्या ±५% मध्ये).',
+    downward:'बाजाराचा ट्रेंड खालच्या दिशेने आहे. थांबू नका — पुढील',
+    days_sfx2:'दिवसांत किंमती घसरण्याचा अंदाज.',
+    caution_msp:'सरकारी MSP खरेदी तपासा:',
+    caution_nafed:'जवळच्या NAFED केंद्रावर.',
+    caution_storage:'साठवणूक करा किंवा हंगामी सुधारणेची प्रतीक्षा करा.',
+    stable_wait:'किंमती स्थिर आहेत. अनिश्चित काळ थांबू नका — स्पष्ट वाढ नसल्यास २ आठवड्यांत विका.',
+    ai_mode:'AI मोड — वास्तविक BiLSTM मॉडेल सक्रिय',
+    demo_mode:'डेमो मोड — सांख्यिकीय सिम्युलेशन (AI मोडसाठी .keras फाइल्स backend/models/ मध्ये ठेवा)',
+    proj_prefix:'किंमत अंदाज',
+    hist_months:'गेले १२ महिने',
+    ai_active:'● AI सक्रिय', demo:'◎ डेमो मोड',
+  },
+  hi: {
+    nav_tech:'तकनीक', nav_predict:'मूल्य पूर्वानुमान', nav_foryou:'आपके लिए',
+    predict_label:'AI अनुमान इंजन',
+    predict_title:'मूल्य पूर्वानुमान उपकरण',
+    predict_sub:'अपनी फसल, बाज़ार का स्थान और जलवायु चुनें। BiLSTM + ARIMA एन्सेम्बल ९० दिनों तक के मंडी थोक मूल्यों का पूर्वानुमान लगाता है।',
+    params_title:'मापदंड',
+    label_crop:'फसल चुनें',
+    label_location:'बाज़ार का स्थान',
+    location_placeholder:'जैसे नाशिक, सोलापुर, पुणे, नागपुर…',
+    location_err:'कृपया बाज़ार का स्थान दर्ज करें।',
+    label_climate:'जलवायु / मौसम',
+    label_horizon:'पूर्वानुमान अवधि',
+    days_unit:'दिन',
+    horizon_hint:'अनुशंसित: ६० दिन (सबसे विश्वसनीय)',
+    label_notes:'अतिरिक्त नोट्स (वैकल्पिक)',
+    notes_placeholder:'जैसे पिछले हफ्ते नाशिक में ओले पड़े…',
+    execute_btn:'🚀 AI मॉडल चलाएं',
+    download_title:'📄 रिपोर्ट डाउनलोड करें',
+    download_sub:'पूर्वानुमान, लाभ-हानि व सलाह सहित पूर्ण PDF',
+    empty_main:'पूर्वानुमान मापदंड की प्रतीक्षा।',
+    empty_hint:'बाईं ओर फॉर्म भरें और AI मॉडल चलाएं पर क्लिक करें।',
+    metrics_title:'🎯 मॉडल सटीकता — वास्तविक २०२४-२५ मंडी डेटा',
+    legend_ensemble:'एन्सेम्बल', legend_lstm:'LSTM', legend_arima:'ARIMA',
+    hist_chart_title:'ऐतिहासिक मूल्य — पिछले १२ महीने',
+    table_title:'📅 दिन-दर-दिन पूर्वानुमान',
+    th_day:'दिन', th_date:'तारीख', th_ensemble:'एन्सेम्बल ₹', th_conf:'विश्वास', th_note:'नोट',
+    reality_title:'बाज़ार वास्तविकता जाँच',
+    profit_title:'लाभ/हानि — प्रति क्विंटल (CACP २०२४-२५)',
+    recommendation_label:'सिफारिश',
+    opt_onion:'🧅 प्याज (लासलगाव APMC, नाशिक)',
+    opt_tomato:'🍅 टमाटर (पुणे APMC)',
+    opt_soybean:'🫘 सोयाबीन (लातूर APMC)',
+    climate_normal:'☀️ सामान्य (×१.००)', climate_sunny:'🌤 धूप / सूखा (×१.०२)',
+    climate_cold:'❄️ ठंड / पाला (×१.०८)', climate_rainy:'🌧 वर्षा / बाढ़ (×१.१२)',
+    climate_drought:'🏜 सूखा (×१.१८)',
+    mkt_onion:'बाज़ार: लासलगाव · पिंपलगाव · पुणे · सोलापुर · नागपुर · मुंबई',
+    mkt_tomato:'बाज़ार: पुणे (मोशी/मांजरी) · नाशिक · सातारा · मुंबई · नागपुर · औरंगाबाद',
+    mkt_soybean:'बाज़ार: लातूर · अकोला · अमरावती · नागपुर · वाशिम · हिंगोली',
+    climate_note_sunny:'सूखी परिस्थिति → प्याज और टमाटर की आपूर्ति घट सकती है।',
+    climate_note_cold:'पाला जोखिम → सभी फसलें प्रभावित, प्याज सबसे अधिक।',
+    climate_note_rainy:'भारी बारिश → प्याज मिट्टी में सड़ता है, सोयाबीन आपूर्ति बढ़ती है।',
+    climate_note_drought:'सूखा → सभी फसलें प्रभावित। मूल्य उल्लेखनीय रूप से बढ़ने की संभावना।',
+    kpi_peak:'शिखर पूर्वानुमान', kpi_sentiment:'भावना', kpi_today:'आज का अनुमान',
+    kpi_model:'मॉडल', kpi_avg:'औसत पूर्वानुमान',
+    loading_msg:'AI मॉडल से जुड़ रहे हैं... (पहले अनुमान में २०-३० सेकंड लग सकते हैं)',
+    conf_suffix:'विश्वसनीयता',
+    seasonal_range:'मौसमी सीमा',
+    sel_today:'आज बेचें → लाभ', sel_peak:'शिखर पर बेचें → लाभ',
+    cultivation_cost:'उत्पादन लागत',
+    govt_msp:'सरकारी MSP',
+    msp_status:'MSP स्थिति',
+    sell_store:'⬆ रोकें — मूल्य बढ़ने का अनुमान',
+    sell_now_fall:'⬇ अभी बेचें — मूल्य गिर रहे हैं',
+    sell_caution:'⚠ सावधान — आज बेचना = हानि',
+    sell_stable:'≈ स्थिर — इस मूल्य पर बेचें',
+    best_sell:'सर्वोत्तम समय', avoid:'टालें',
+    conf_badge_sfx:'विश्वसनीयता',
+    uncertainty:'इस पूर्वानुमान अवधि पर अनिश्चितता बैंड',
+    realistic:'✓ वास्तविक', optimistic:'⚠ आशावादी', conservative:'↑ सतर्क',
+    note_optimistic:'शिखर अनुमान सामान्य मौसमी उच्च से अधिक। सतर्क अनुमान:',
+    note_conservative:'अनुमान सामान्य मौसमी न्यूनतम से कम। समायोजित अनुमान:',
+    note_realistic:'अनुमान इस अवधि की सामान्य मौसमी सीमा के भीतर है।',
+    consider_store:'अधिकतम रोकें', days_sfx:'दिन। लक्ष्य:',
+    sell_within:'इस मूल्य पर बेचें', above_5:'(लक्ष्य के ±५% के भीतर)।',
+    downward:'बाज़ार का रुझान नीचे की ओर है। रुकें नहीं — अगले',
+    days_sfx2:'दिनों में मूल्य गिरने का अनुमान।',
+    caution_msp:'सरकारी MSP खरीद जाँचें:',
+    caution_nafed:'नज़दीकी NAFED केंद्र पर।',
+    caution_storage:'भंडारण करें या मौसमी सुधार की प्रतीक्षा करें।',
+    stable_wait:'मूल्य स्थिर हैं। अनिश्चित काल तक न रुकें — स्पष्ट वृद्धि न हो तो २ सप्ताह में बेचें।',
+    ai_mode:'AI मोड — वास्तविक BiLSTM मॉडल सक्रिय',
+    demo_mode:'डेमो मोड — सांख्यिकीय सिमुलेशन (AI मोड के लिए .keras फ़ाइलें backend/models/ में रखें)',
+    proj_prefix:'मूल्य अनुमान',
+    hist_months:'पिछले १२ महीने',
+    ai_active:'● AI सक्रिय', demo:'◎ डेमो मोड',
+  },
+};
+
+// ── Active translation helper ────────────────────────────
+function p(key) {
+  const lang = window.AGRI_LANG || 'en';
+  const d = PAGE_TRANSLATIONS[lang] || PAGE_TRANSLATIONS['en'];
+  return d[key] !== undefined ? d[key] : (PAGE_TRANSLATIONS['en'][key] || key);
+}
+
+// ── Apply all data-i18n on this page ────────────────────
+function applyPageLang() {
+  const lang = window.AGRI_LANG || 'en';
+  document.documentElement.lang = lang;
+  if (lang === 'mr' || lang === 'hi') {
+    document.body.style.fontFamily = "'Noto Sans Devanagari', 'Plus Jakarta Sans', sans-serif";
+  } else {
+    document.body.style.fontFamily = '';
+  }
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = p(key);
+    if (val) el.textContent = val;
+  });
+
+  // Placeholders
+  document.getElementById('locationInput').placeholder = p('location_placeholder');
+  document.getElementById('notesInput').placeholder    = p('notes_placeholder');
+
+  // Select option texts
+  const cropSel = document.getElementById('cropSelect');
+  const opts = ['opt_onion','opt_tomato','opt_soybean'];
+  Array.from(cropSel.options).forEach((o, i) => { o.textContent = p(opts[i]); });
+
+  const climateSel = document.getElementById('climateSelect');
+  const copts = ['climate_normal','climate_sunny','climate_cold','climate_rainy','climate_drought'];
+  Array.from(climateSel.options).forEach((o, i) => { o.textContent = p(copts[i]); });
+
+  // Update market hint and climate note for current selections
+  updateMarketHint();
+  updateClimateNote();
+
+  // Days display
+  const dv = document.getElementById('daysVal');
+  if (dv) dv.innerHTML = daysRange.value + ' <span data-i18n="days_unit">' + p('days_unit') + '</span>';
+
+  // Active lang button
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active',
+      (btn.textContent.trim() === 'EN'    && lang === 'en') ||
+      (btn.textContent.trim() === 'मराठी' && lang === 'mr') ||
+      (btn.textContent.trim() === 'हिंदी' && lang === 'hi')
+    );
+  });
+}
+
+// ── Override global setLang for this page ───────────────
+const _origSetLang = window.setLang;
+window.setLang = function(lang) {
+  window.AGRI_LANG = lang;
+  localStorage.setItem('agri_lang', lang);
+  applyPageLang();
+};
+
+// ════════════════════════════════════════════════════════════
+//  MARKET HINTS & CLIMATE NOTES
+// ════════════════════════════════════════════════════════════
+function updateMarketHint() {
+  const crop = document.getElementById('cropSelect').value;
+  const keys = { Onion:'mkt_onion', Tomato:'mkt_tomato', Soybean:'mkt_soybean' };
+  document.getElementById('marketHint').textContent = p(keys[crop] || 'mkt_onion');
+}
+function updateClimateNote() {
+  const cl = document.getElementById('climateSelect').value;
+  const keys = { normal:'', sunny:'climate_note_sunny', cold:'climate_note_cold', rainy:'climate_note_rainy', drought:'climate_note_drought' };
+  document.getElementById('climateNote').textContent = keys[cl] ? p(keys[cl]) : '';
+}
+
+// ════════════════════════════════════════════════════════════
+//  PAGE INIT
+// ════════════════════════════════════════════════════════════
+const daysRange = document.getElementById('daysRange');
+const daysVal   = document.getElementById('daysVal');
+daysRange.addEventListener('input', () => {
+  daysVal.innerHTML = daysRange.value + ' <span>' + p('days_unit') + '</span>';
+});
+
+document.getElementById('cropSelect').addEventListener('change', updateMarketHint);
+document.getElementById('climateSelect').addEventListener('change', updateClimateNote);
+
+// Chart instances
+let fcChart = null, histChartInst = null;
+
+const CHART_BASE = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#0e1826',
+      borderColor: 'rgba(34,212,146,0.28)',
+      borderWidth: 1,
+      titleColor: '#dff0ea',
+      bodyColor: '#7da898',
+      padding: 12,
+      callbacks: { label: c => ' ₹' + Math.round(c.raw).toLocaleString('en-IN') + ' / q' }
+    }
+  },
+  scales: {
+    x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#3d6357', font: { size: 11 }, maxTicksLimit: 12 } },
+    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#3d6357', font: { size: 11 }, callback: v => '₹' + Math.round(v).toLocaleString('en-IN') } }
+  }
+};
+
+function buildForecastChart(data) {
+  const ctx = document.getElementById('forecastChart').getContext('2d');
+  if (fcChart) fcChart.destroy();
+  fcChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.forecast.dates,
+      datasets: [
+        { label: p('legend_ensemble'), data: data.forecast.ensemble, borderColor:'#22d492',
+          backgroundColor:'rgba(34,212,146,0.06)', borderWidth:2.5, fill:true,
+          tension:0.4, pointRadius:0, pointHoverRadius:5, pointHoverBackgroundColor:'#22d492' },
+        { label: p('legend_lstm'), data: data.forecast.lstm, borderColor:'rgba(77,159,255,0.6)',
+          borderWidth:1.3, borderDash:[4,4], fill:false, tension:0.4, pointRadius:0 },
+        { label: p('legend_arima'), data: data.forecast.arima, borderColor:'rgba(240,180,41,0.55)',
+          borderWidth:1.3, borderDash:[2,6], fill:false, tension:0.4, pointRadius:0 }
+      ]
+    },
+    options: CHART_BASE
+  });
+}
+
+function buildHistChart(data) {
+  const ctx = document.getElementById('histChart').getContext('2d');
+  if (histChartInst) histChartInst.destroy();
+  histChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.historical.labels,
+      datasets: [{
+        label: p('hist_chart_title'),
+        data: data.historical.values,
+        backgroundColor: data.historical.values.map((_, i) =>
+          i === data.historical.values.length - 1 ? 'rgba(34,212,146,0.5)' : 'rgba(34,212,146,0.15)'),
+        borderColor: '#22d492', borderWidth: 1.5, borderRadius: 5
+      }]
+    },
+    options: CHART_BASE
+  });
+}
+
+function fmt(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+
+function renderKPIs(data) {
+  const s  = data.summary;
+  const sc = s.sentiment === 'BULLISH' ? 'var(--green)' : s.sentiment === 'BEARISH' ? 'var(--red)' : 'var(--amber)';
+  const tb = s.trend === 'RISING' ? 'trend-rising' : s.trend === 'FALLING' ? 'trend-falling' : 'trend-stable';
+  const trendLbl = s.trend === 'RISING' ? p('rising') : s.trend === 'FALLING' ? p('falling') : p('stable');
+  const sentLbl  = s.sentiment === 'BULLISH' ? p('bullish') : s.sentiment === 'BEARISH' ? p('bearish') : p('neutral');
+  const modeLbl  = data.mode === 'ai' ? p('ai_active') : p('demo');
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi-card featured">
+      <div class="kpi-lbl mono-label">${p('kpi_peak')}</div>
+      <div class="kpi-val">${fmt(s.peak_price)}</div>
+      <div style="font-size:12px;color:var(--text-mid)">${p('th_day')} ${s.peak_day} · ${s.peak_date}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl mono-label">${p('kpi_sentiment')}</div>
+      <div class="kpi-val" style="color:${sc};font-size:22px">${sentLbl}</div>
+      <span class="trend-badge ${tb}">${trendLbl} ${s.change_pct > 0 ? '+' : ''}${s.change_pct}%</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl mono-label">${p('kpi_today')}</div>
+      <div class="kpi-val" style="font-size:22px">${fmt(s.current_price)}</div>
+      <div style="font-size:12px;color:var(--text-mid)">${p('kpi_avg')}: ${fmt(s.avg_price)}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl mono-label">${p('kpi_model')}</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">${data.market}</div>
+      <span class="badge ${data.mode === 'ai' ? 'badge-green' : 'badge-amber'}">${modeLbl}</span>
+    </div>
+  `;
+}
+
+function renderMetrics(data) {
+  const mc = document.getElementById('metricsCard');
+  const mg = document.getElementById('metricsGrid');
+  if (data.mode === 'ai' && data.metrics && data.metrics.MAE) {
+    mc.style.display = 'block';
+    mg.innerHTML = `
+      <div class="metric-item"><div class="m-val">₹${data.metrics.MAE.toLocaleString('en-IN')}</div><div class="m-lbl">MAE / Quintal</div></div>
+      <div class="metric-item"><div class="m-val">₹${data.metrics.RMSE.toLocaleString('en-IN')}</div><div class="m-lbl">RMSE / Quintal</div></div>
+      <div class="metric-item"><div class="m-val">${data.metrics.R2 !== null ? data.metrics.R2 : 'N/A'}</div><div class="m-lbl">R² Score</div></div>
+    `;
+  } else {
+    mc.style.display = 'none';
+  }
+}
+
+function renderTable(data) {
+  const { dates, ensemble, lstm, arima } = data.forecast;
+  const n        = dates.length;
+  const bestIdx  = ensemble.indexOf(Math.max(...ensemble));
+  const worstIdx = ensemble.indexOf(Math.min(...ensemble));
+  const rows     = [];
+  for (let i = 0; i < n; i++) {
+    if (i !== 0 && i % 10 !== 9 && i !== n - 1 && i !== bestIdx && i !== worstIdx) continue;
+    const conf    = Math.max(60, Math.round(92 - i * 0.4));
+    const rowCls  = i === bestIdx ? 'best-row' : i === worstIdx ? 'avoid-row' : '';
+    const noteHtml = i === bestIdx
+      ? `<span class="note-tag note-best">${p('best_sell')}</span>`
+      : i === worstIdx ? `<span class="note-tag note-avoid">${p('avoid')}</span>` : '';
+    rows.push(`
+      <tr class="${rowCls}">
+        <td class="td-day">${i + 1}</td>
+        <td>${dates[i]}</td>
+        <td>${lstm[i].toLocaleString('en-IN')}</td>
+        <td>${arima[i].toLocaleString('en-IN')}</td>
+        <td class="td-ensemble">${ensemble[i].toLocaleString('en-IN')}</td>
+        <td>${conf}%</td>
+        <td>${noteHtml}</td>
+      </tr>`);
+  }
+  document.getElementById('tableBody').innerHTML = rows.join('');
+  document.getElementById('confBadge').textContent =
+    `${data.days}d · ${data.days <= 30 ? '85%' : data.days <= 60 ? '72%' : '60%'} ${p('conf_badge_sfx')}`;
+}
+
+function renderReality(rc) {
+  const pill = document.getElementById('realityPill');
+  if (rc.status === 'REALISTIC') {
+    pill.className = 'badge badge-green'; pill.textContent = p('realistic');
+  } else if (rc.status === 'OPTIMISTIC') {
+    pill.className = 'badge badge-amber'; pill.textContent = p('optimistic');
+  } else {
+    pill.className = 'badge badge-blue';  pill.textContent = p('conservative');
+  }
+  document.getElementById('realityConf').textContent  = rc.confidence + '% ' + p('conf_suffix');
+  document.getElementById('realityRange').textContent =
+    `${p('seasonal_range')}: ₹${rc.realistic_low.toLocaleString('en-IN')} – ₹${rc.realistic_high.toLocaleString('en-IN')}/q  (avg ₹${rc.realistic_avg.toLocaleString('en-IN')}/q)`;
+  document.getElementById('realityNote').textContent =
+    rc.status === 'OPTIMISTIC'
+      ? `${p('note_optimistic')} ₹${rc.adjusted.toLocaleString('en-IN')}/q`
+      : rc.status === 'CONSERVATIVE'
+      ? `${p('note_conservative')} ₹${rc.adjusted.toLocaleString('en-IN')}/q`
+      : p('note_realistic');
+  setTimeout(() => { document.getElementById('confBar').style.width = rc.confidence + '%'; }, 200);
+  document.getElementById('confLabel').textContent = `±${rc.uncertainty_pct}% ${p('uncertainty')}`;
+}
+
+function renderProfit(pf, crop) {
+  const nc = pf.profit_now  >= 0 ? 'val-pos' : 'val-neg';
+  const pc = pf.profit_peak >= 0 ? 'val-pos' : 'val-neg';
+  let mspHtml = '';
+  if (pf.msp) {
+    mspHtml = `
+      <div class="profit-row">
+        <span class="profit-key">${p('govt_msp')} (${crop})</span>
+        <span class="profit-val val-mid">₹${pf.msp.value.toLocaleString('en-IN')}/q</span>
+      </div>
+      <div class="profit-row">
+        <span class="profit-key">${p('msp_status')}</span>
+        <span class="profit-val ${pf.msp.above ? 'val-pos' : 'val-neg'}">${pf.msp.note}</span>
+      </div>`;
+  }
+  document.getElementById('profitRows').innerHTML = `
+    <div class="profit-row">
+      <span class="profit-key">${p('cultivation_cost')}</span>
+      <span class="profit-val val-mid">₹${pf.cost_per_q.toLocaleString('en-IN')}/q</span>
+    </div>
+    <div class="profit-row">
+      <span class="profit-key">${p('sel_today')}</span>
+      <span class="profit-val ${nc}">${pf.profit_now >= 0 ? '+' : ''}₹${pf.profit_now.toLocaleString('en-IN')} (${pf.margin_now}%)</span>
+    </div>
+    <div class="profit-row">
+      <span class="profit-key">${p('sel_peak')}</span>
+      <span class="profit-val ${pc}">${pf.profit_peak >= 0 ? '+' : ''}₹${pf.profit_peak.toLocaleString('en-IN')} (${pf.margin_peak}%)</span>
+    </div>
+    ${mspHtml}
+  `;
+}
+
+function renderVerdict(data) {
+  const s  = data.summary;
+  const pf = data.profit;
+  const rc = data.reality_check;
+  let txt = '', action = '';
+
+  if (s.trend === 'RISING' && s.change_pct > 8 && pf.profit_peak > 0) {
+    txt    = `${p('sell_store')} ${s.change_pct}%`;
+    const target = rc.status === 'OPTIMISTIC' ? rc.adjusted : s.peak_price;
+    action = `${p('consider_store')} ${Math.min(s.peak_day, 30)} ${p('days_sfx')} ${fmt(target)}/q. ${p('sell_within')} ${fmt(Math.round(target * 0.95))}+ ${p('above_5')}`;
+  } else if (s.trend === 'FALLING' && s.change_pct < -5) {
+    txt    = `${p('sell_now_fall')} ${s.change_pct}%`;
+    action = `${p('downward')} ${data.days} ${p('days_sfx2')}`;
+  } else if (pf.profit_now < 0) {
+    txt    = `${p('sell_caution')} (${pf.margin_now}%)`;
+    action = pf.msp
+      ? `${p('caution_msp')} ₹${pf.msp.value.toLocaleString('en-IN')}/q ${p('caution_nafed')}`
+      : p('caution_storage');
+  } else {
+    txt    = `${p('sell_stable')} ${fmt(Math.round(s.current_price * 1.05))}+`;
+    action = p('stable_wait');
+  }
+
+  document.getElementById('verdictText').textContent   = txt;
+  document.getElementById('verdictAction').textContent = action;
+  const b = document.getElementById('verdictBanner');
+  b.style.borderColor = s.trend === 'RISING' ? 'rgba(34,212,146,0.3)' : s.trend === 'FALLING' ? 'rgba(240,82,101,0.3)' : 'var(--border)';
+}
+
+let _lastPayload = null;
+
+async function runPrediction() {
+  const btn   = document.getElementById('executeBtn');
+  const err   = document.getElementById('errorBanner');
+  const empty = document.getElementById('emptyState');
+  const rcc   = document.getElementById('resultContent');
+  const mb    = document.getElementById('modeBar');
+  const dlRow = document.getElementById('downloadRow');
+
+  const loc    = document.getElementById('locationInput').value.trim();
+  const locErr = document.getElementById('locationErr');
+  if (!loc) {
+    locErr.style.display = 'block';
+    document.getElementById('locationInput').classList.add('error');
+    document.getElementById('locationInput').focus();
+    return;
+  }
+  locErr.style.display = 'none';
+  document.getElementById('locationInput').classList.remove('error');
+
+  btn.classList.add('loading'); btn.disabled = true;
+  err.classList.remove('show');
+  empty.style.display = 'none';
+  rcc.style.display   = 'none';
+  dlRow.style.display = 'none';
+
+  mb.style.display = 'flex';
+  document.getElementById('modeDot').style.background = 'var(--amber)';
+  document.getElementById('modeText').textContent = p('loading_msg');
+
+  const payload = {
+    crop:     document.getElementById('cropSelect').value,
+    location: loc,
+    climate:  document.getElementById('climateSelect').value,
+    days:     parseInt(document.getElementById('daysRange').value),
+    notes:    document.getElementById('notesInput').value.trim(),
+  };
+  _lastPayload = payload;
+
+  const data = await fetchPrediction(payload);
+  window._lastPredictionData = data;
+
+  mb.style.display = 'flex';
+  document.getElementById('modeDot').style.background = data.mode === 'ai' ? 'var(--green)' : 'var(--amber)';
+  document.getElementById('modeText').textContent = data.mode === 'ai'
+    ? `${p('ai_mode')} (${data.crop} · ${data.market})`
+    : p('demo_mode');
+
+  document.getElementById('chartTitle').textContent =
+    `${p('proj_prefix')} (${data.days} ${p('days_unit')}) — ${data.crop} · ${data.location}`;
+  document.getElementById('histMarketLabel').textContent = data.market;
+
+  renderKPIs(data);
+  renderMetrics(data);
+  buildForecastChart(data);
+  buildHistChart(data);
+  renderTable(data);
+  renderReality(data.reality_check);
+  renderProfit(data.profit, data.crop);
+  renderVerdict(data);
+
+  rcc.style.display = 'flex';
+  dlRow.style.display = 'flex';
+
+  if (window.innerWidth < 1100) {
+    setTimeout(() => rcc.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+  }
+
+  btn.classList.remove('loading'); btn.disabled = false;
+}
+
+async function triggerDownload() {
+  if (!_lastPayload) return;
+  const btn = document.getElementById('downloadReportBtn');
+  btn.classList.add('loading-dl'); btn.disabled = true;
+  await downloadReport(_lastPayload);
+  btn.classList.remove('loading-dl'); btn.disabled = false;
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('agri_lang') || 'en';
+  window.AGRI_LANG = saved;
+  applyPageLang();
+  updateMarketHint();
+});
+</script>
+</body>
+</html>
